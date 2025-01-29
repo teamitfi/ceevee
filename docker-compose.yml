@@ -1,11 +1,12 @@
 version: '3.8'
 
 services:
-  ceevee-supabase-db:
+  ceevee-db:
+    image: ceevee-db
+    container_name: ceevee-db
     build:
       context: ./db
       dockerfile: Dockerfile
-    container_name: supabase-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -20,16 +21,17 @@ services:
       retries: 5
 
   ceevee-api:
+    image: ceevee-api
+    container_name: ceevee-api
     build:
       context: ./api
       dockerfile: Dockerfile
-    container_name: ceevee-api
     environment:
-      DATABASE_URL: "postgresql://postgres:postgres@ceevee-supabase-db:5432/supabase"
+      DATABASE_URL: "postgresql://postgres:postgres@ceevee-db:5432/supabase"
     ports:
       - "4000:4000"
     depends_on:
-      ceevee-supabase-db:
+      ceevee-db:
         condition: service_healthy
     entrypoint: ["/bin/sh", "-c", "yarn prisma migrate deploy && exec node dist/server.js"]
 
