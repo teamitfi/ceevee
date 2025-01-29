@@ -3,15 +3,15 @@ version: '3.8'
 services:
   ceevee-supabase-db:
     build:
-      context: ./db              # Build context points to the db folder
-      dockerfile: Dockerfile     # Use Dockerfile from the db folder
-    container_name: supabase-db  # Name of the database container
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: supabase-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: supabase
     ports:
-      - "5432:5432" # Map the database to localhost:5432
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data # Persistent storage for database
     healthcheck:
@@ -21,8 +21,8 @@ services:
 
   ceevee-api:
     build:
-      context: ./api             # Build context points to the api folder
-      dockerfile: Dockerfile     # Use Dockerfile from the api folder
+      context: ./api
+      dockerfile: Dockerfile
     container_name: ceevee-api
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@ceevee-supabase-db:5432/supabase"
