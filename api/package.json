@@ -1,0 +1,31 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "Express API with AWS Cognito and JWT Authentication",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.0",
+    "aws-sdk": "^2.1692.0",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "jsonwebtoken": "^9.0.0",
+    "jwks-rsa": "^3.1.0",
+    "prisma": "^6.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^9.0.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.0.0"
+  },
+  "author": "Sebastian Nikkonen",
+  "license": "MIT"
+}
