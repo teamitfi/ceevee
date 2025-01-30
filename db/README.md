@@ -9,7 +9,7 @@ This folder contains the configuration for the database using Supabase.
 ## Running the Database as Docker container
 - Build and run the container:
    ```bash
-   docker compose up -d ceevee-db
+   docker compose up --build -d ceevee-db
 
 - Close the container:
    ```bash
@@ -19,7 +19,7 @@ This folder contains the configuration for the database using Supabase.
     ```bash
     docker compose logs ceevee-db --tail=100
 
-- Connect to the database container
+- Connect to the db container
     ```bash
    docker compose exec ceevee-db sh
 

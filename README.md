@@ -12,4 +12,8 @@ Implement db, api and ui for a service to interact with LLMs
 
 - Close the containers:
    ```bash
+   docker compose down
+
+- Close the containers and remove volumes/orphans:
+   ```bash
    docker compose down --volumes --remove-orphans
