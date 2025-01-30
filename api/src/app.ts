@@ -1,9 +1,14 @@
-import express from "express";
-import privateRoutes from "./routes/private.js";
+import express, {NextFunction, Request, Response} from "express";
+import routes from "./routes";
+
+const logIncomingRequest = (req: Request, res: Response, next: NextFunction) => {
+  console.log(`Incoming request: ${req.method} ${req.path}`);
+  next();
+}
 
 const app = express();
 app.use(express.json());
-app.use("/api/private", privateRoutes);
+app.use("/api/v1", logIncomingRequest, routes);
 
 // 404 handler
 app.use((req, res) => {

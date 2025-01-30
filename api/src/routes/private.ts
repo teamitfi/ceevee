@@ -1,10 +1,11 @@
-import { NextFunction, Request, Response, Router } from "express";
-import { getPrivateData } from "../controllers/privateController.js";
+import { Router } from "express";
+import { getProfile, getUsers } from "../controllers/privateController.js";
+import { authenticateToken } from "../middlewares/authenticateToken";
+import { syncUser } from "../middlewares/syncUsers";
 
 const router = Router();
-router.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`Incoming request: ${req.method} ${req.path}`);
-  next();
-});
-router.get("/users", getPrivateData);
+
+router.get('/profile', authenticateToken, syncUser, getProfile)
+router.get("/users", authenticateToken, syncUser, getUsers);
+
 export default router;
