@@ -1,7 +1,7 @@
 meta {
   name: Login
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -16,11 +16,12 @@ headers {
 
 body:json {
   {
-    "email": "test@example.com",
-    "password": "SecurePass123"
+    "email": "sebastian.nikkonen@teamit.fi",
+    "password": "MTKjpaQBteLJP@s*p9by97r3"
   }
 }
 
 script:post-response {
   bru.setVar("token", res.body.token);
+  bru.setVar("refreshToken", res.body.refreshToken)
 }

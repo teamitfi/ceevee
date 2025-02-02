@@ -1,6 +1,6 @@
 declare namespace Express {
-  import { DecodedUser } from "../config/cognito";
+  import { CognitoUser } from "../config/cognito";
   export interface Request {
-    user?: DecodedUser;
+    user?: CognitoUser;
   }
 }

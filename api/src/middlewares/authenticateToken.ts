@@ -1,16 +1,50 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken, DecodedUser } from "../config/cognito";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
+import dotenv from "dotenv";
+import { COGNITO_ISSUER } from "../config/cognito";
 
+dotenv.config();
+
+// Initialize JWKS client
+const client = jwksClient({
+  jwksUri: `${COGNITO_ISSUER}/.well-known/jwks.json`,
+});
+
+// Function to get the signing key
+const getKey = (header: any, callback: any) => {
+  client.getSigningKey(header.kid, (err, key) => {
+    if (err) return callback(err);
+    const signingKey = key?.getPublicKey();
+    callback(null, signingKey);
+  });
+}
+
+/**
+ * Middleware to authenticate JWT using AWS Cognito
+ */
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];
-  if (!authHeader) return res.status(401).json({ message: "Access denied" });
+  if (!authHeader) return res.status(401).json({ message: "Access denied. No token provided." });
 
-  const token = authHeader.split(" ")[1]; // Extract token from "Bearer <token>"
-  if (!token) return res.status(403).json({ message: "Invalid token format" });
+  // Ensure token does not include "Bearer " prefix
+  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : authHeader;
 
-  const decoded: DecodedUser | null = verifyToken(token);
-  if (!decoded) return res.status(403).json({ message: "Invalid token" });
+  // Verify JWT using Cognito’s public key
+  jwt.verify(token, getKey, { issuer: COGNITO_ISSUER }, (err, decoded) => {
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "Token expired. Please refresh your token." });
+      }
+      return res.status(403).json({ message: "Invalid token", error: err.message });
+    }
 
-  req.user = decoded;
-  next();
+    const jwtPayload = decoded as JwtPayload;
+    req.user = {
+      cognitoId: jwtPayload.sub,
+      email: jwtPayload.email,
+      roles: jwtPayload["cognito:groups"] || ["user"],
+    };
+    next();
+  });
 };

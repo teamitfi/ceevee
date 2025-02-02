@@ -51,7 +51,7 @@
 
 - Test the API
    ```bash
-   curl -X GET http://localhost:4000/api/private/users -H "Content-Type: application/json"
+   curl -X GET http://localhost:4000/api/v1/private/users -H "Content-Type: application/json"
 
 ---
 

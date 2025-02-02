@@ -1,0 +1,32 @@
+meta {
+  name: Refresh token
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:4000/api/v1/public/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "sebastian.nikkonen@teamit.fi",
+    "password": "MTKjpaQBteLJP@s*p9by97r3"
+  }
+}
+
+script:pre-request {
+  const refreshToken = bru.getVar("refreshToken");
+  req.setHeader("Authorization", `Bearer ${refreshToken}`);
+}
+
+script:post-response {
+  bru.setVar("token", res.body.token);
+  bru.setVar("refreshToken", res.body.refreshToken)
+}

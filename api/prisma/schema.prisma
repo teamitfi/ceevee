@@ -15,9 +15,9 @@ datasource db {
 }
 
 model Users {
-  id        String  @id @default(uuid())
-  email     String  @unique
-  cognitoId String  @unique
-  role      String  @default("user")
+  id        String   @id @default(uuid())
+  email     String   @unique
+  cognitoId String   @unique
+  roles     String[] @default(["user"])
   createdAt DateTime @default(now())
 }

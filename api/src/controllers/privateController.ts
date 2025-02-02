@@ -8,7 +8,6 @@ export const getProfile = (req: Request, res: Response) => {
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.users.findMany();
-    console.log('Response', users)
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });

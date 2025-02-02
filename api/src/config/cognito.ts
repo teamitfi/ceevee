@@ -1,30 +1,35 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const SECRET_KEY = process.env.JWT_SECRET;
+// Initialize AWS Cognito Client
+export const cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 
-if (!SECRET_KEY) {
-  throw new Error('JWT_SECRET must be provided');
+export const COGNITO_ISSUER = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`;
+
+export interface DatabaseUser {
+  id: string;               // Unique ID from database
+  cognitoId: string;        // AWS Cognito User ID
+  email: string;            // User Email
+  roles: ['admin', 'user']; // Roles (e.g., ["user", "admin"])
+  createdAt: string;        // ISO Date format
 }
 
-export interface DecodedUser {
-  id: string;         // Unique ID from database
-  cognitoId: string;  // AWS Cognito User ID
-  email: string;      // User Email
-  role: string;       // Role (e.g., "user", "admin")
-  createdAt: string;  // ISO Date format
+export interface CognitoUser {
+  sub: string,
+  email_verified: boolean,
+  iss: string,
+  'cognito:username': string,
+  'cognito:groups'?: ['admin', 'user'],
+  origin_jti: string,
+  aud: string,
+  event_id: string,
+  token_use: string,
+  auth_time: number,
+  exp: number,
+  iat: number,
+  jti: string,
+  email: string
 }
 
-export const generateToken = (user: { id: string; email: string; role: string }) => {
-  return jwt.sign(user, SECRET_KEY, { expiresIn: '1h' });
-};
-
-export const verifyToken = (token: string): DecodedUser | null => {
-  try {
-    return jwt.verify(token, SECRET_KEY) as DecodedUser;
-  } catch (error) {
-    return null;
-  }
-};
