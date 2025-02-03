@@ -15,6 +15,10 @@ This folder contains the configuration for the database using Supabase.
    ```bash
    docker compose down ceevee-db
 
+- Close the container and remove volumes/orphans:
+   ```bash
+   docker compose down ceevee-db --volumes --remove-orphans
+
 - See the logs:
     ```bash
     docker compose logs ceevee-db --tail=100
@@ -23,6 +27,6 @@ This folder contains the configuration for the database using Supabase.
     ```bash
    docker compose exec ceevee-db sh
 
-- Validate content
+- Connect to the db container
     ```bash
-    docker compose exec ceevee-db psql -U postgres -d supabase -c "SELECT * FROM users;" 
+    docker exec -it ceevee-db psql -U postgres -d supabase

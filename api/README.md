@@ -10,6 +10,8 @@
 
 ## Database Setup
 
+[Prisma CLI reference](https://www.prisma.io/docs/orm/reference/prisma-cli-reference)
+
 - Applies only approved migrations in prisma/migrations/ to the database. On first setup & after pulling new changes.
    ```bash
    yarn prisma migrate deploy
@@ -19,12 +21,8 @@
    yarn prisma generate
 
 - Creates a new migration based on schema.prisma and applies it to the local database. Only for development.
-   ```bash
-   yarn prisma migrate dev --name init
-
-- Pull Existing Database Schema:
-   ```bash
-   yarn prisma pull
+   ```
+   yarn prisma migrate dev --name <migration-name>
 
 ## Running the development server
 
