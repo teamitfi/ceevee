@@ -20,4 +20,6 @@ model Users {
   cognitoId String   @unique
   roles     String[] @default(["user"])
   createdAt DateTime @default(now())
+
+  @@map("users") // Explicitly ensure DB table is "users"
 }
