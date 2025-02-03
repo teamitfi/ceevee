@@ -1,7 +1,5 @@
-import { PrismaClient } from "@prisma/client";
 import { CognitoUser } from "../config/cognito";
-
-const prisma = new PrismaClient();
+import prisma from "../db";
 
 export const syncUser = async (decodedJwt: CognitoUser) => {
   if (!decodedJwt.sub || !decodedJwt.email) {
