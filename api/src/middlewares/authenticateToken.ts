@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import dotenv from "dotenv";
-import { COGNITO_ISSUER } from "../config/cognito";
+import { COGNITO_ISSUER } from "../config/cognito.js";
 
 dotenv.config();
 

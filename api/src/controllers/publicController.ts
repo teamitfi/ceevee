@@ -6,8 +6,8 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import {syncUser} from "../middlewares/syncUser";
-import {cognitoClient} from "../config/cognito";
+import {syncUser} from "../middlewares/syncUser.js";
+import {cognitoClient} from "../config/cognito.js";
 
 dotenv.config();
 

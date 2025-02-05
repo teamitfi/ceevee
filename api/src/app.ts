@@ -1,5 +1,5 @@
 import express, {NextFunction, Request, Response} from "express";
-import routes from "./routes";
+import routes from "./routes/index.js";
 
 const logIncomingRequest = (req: Request, _res: Response, next: NextFunction) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);
