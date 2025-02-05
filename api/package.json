@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc",
-    "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts"
+    "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts",
+    "lint": "eslint src --fix"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.738.0",
@@ -20,12 +21,18 @@
     "prisma": "^6.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@typescript-eslint/eslint-plugin": "^8.23.0",
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^9.0.0",
+    "eslint": "^9.19.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-import-resolver-typescript": "^3.7.0",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.1",
     "tsx": "^4.19.2",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.23.0"
   },
   "author": "Sebastian Nikkonen",
   "license": "MIT"

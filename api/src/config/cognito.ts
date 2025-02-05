@@ -12,16 +12,18 @@ export interface DatabaseUser {
   id: string;               // Unique ID from database
   cognitoId: string;        // AWS Cognito User ID
   email: string;            // User Email
-  roles: ['admin', 'user']; // Roles (e.g., ["user", "admin"])
-  createdAt: string;        // ISO Date format
+  roles: string[];          // Roles (e.g., ["user", "admin"])
+  createdAt?: string;       // ISO Date format
 }
+
+export type Role = 'admin' | 'user';
 
 export interface CognitoUser {
   sub: string,
   email_verified: boolean,
   iss: string,
   'cognito:username': string,
-  'cognito:groups'?: ['admin', 'user'],
+  'cognito:groups'?: string[],
   origin_jti: string,
   aud: string,
   event_id: string,
