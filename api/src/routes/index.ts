@@ -1,6 +1,6 @@
 import { Router } from "express";
-import publicRoutes from "./public";
-import privateRoutes from "./private";
+import publicRoutes from "./public.js";
+import privateRoutes from "./private.js";
 
 const router = Router();
 

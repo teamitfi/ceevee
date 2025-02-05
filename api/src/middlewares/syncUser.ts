@@ -1,5 +1,5 @@
 import { CognitoUser } from "../config/cognito";
-import prisma from "../db";
+import prisma from "../db.js";
 
 export const syncUser = async (decodedJwt: CognitoUser) => {
   if (!decodedJwt.sub || !decodedJwt.email) {
