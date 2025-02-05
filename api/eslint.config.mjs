@@ -55,7 +55,15 @@ export default [
           "varsIgnorePattern": "^_",
           "ignoreRestSiblings": true
         }
-      ]
+      ],
+      'import/extensions': [
+        'error',
+        'always',
+        {
+          js: 'never',
+          ts: 'never',
+        },
+      ],
     },
     files: ["src/**/*.ts"],
     languageOptions: {
