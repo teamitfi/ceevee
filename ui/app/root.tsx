@@ -6,9 +6,11 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-
+import {Theme, ThemePanel} from "@radix-ui/themes";
 import type { Route } from "./+types/root";
+import "@radix-ui/themes/styles.css";
 import "./app.css";
+
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -33,9 +35,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <Theme accentColor="crimson" grayColor="sand" radius="large" scaling="95%">
+          <ThemePanel />
+          {children}
+          <ScrollRestoration />
+          <Scripts />
+        </Theme>
       </body>
     </html>
   );
