@@ -1,13 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "outDir": "./dist",
-    "moduleResolution": "Node",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
+    "target": "ES2021",            // Use the ECMAScript 2021 target
+    "module": "ESNext",            // Use ES modules (supports imports)
+    "moduleResolution": "node",    // Use Node.js-style module resolution
+    "esModuleInterop": true,       // Enables compatibility between CommonJS and ES modules
+    "allowSyntheticDefaultImports": true, // Allows default imports from non-ESM modules
+    "strict": true,                // Enable strict type checking options
+    "resolveJsonModule": true,     // Allows importing JSON files as modules
+    "skipLibCheck": true,          // Skip type checking for declaration files (improves performance)
+    "forceConsistentCasingInFileNames": true, // Enforces consistent file casing
+    "baseUrl": "./",               // Base directory for resolving non-relative module names
+    "outDir": "./dist",            // Redirect output structure to the dist directory
+    "paths": {
+      "*": ["node_modules/*"]      // Resolves imports to node_modules
+    }
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts"                  // Linting only TypeScript files in the src folder
+  ],
+  "exclude": [
+    "node_modules",                // Exclude the node_modules directory
+    "dist"                          // Exclude the build output directory
+  ]
 }
