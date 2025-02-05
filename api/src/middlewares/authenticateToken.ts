@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import type { Request, Response, NextFunction } from "express";
+import type { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import dotenv from "dotenv";
 import { COGNITO_ISSUER } from "../config/cognito.js";

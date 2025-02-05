@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import prisma from "../db.js";
 
 export const getProfile = (req: Request, res: Response) => {

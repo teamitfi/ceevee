@@ -1,4 +1,4 @@
-import { CognitoUser } from "../config/cognito";
+import type { CognitoUser } from "../config/cognito";
 import prisma from "../db.js";
 
 export const syncUser = async (decodedJwt: CognitoUser) => {
