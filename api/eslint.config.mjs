@@ -4,6 +4,9 @@ import tsEslint from "typescript-eslint";
 import importPlugin from "eslint-plugin-import";
 
 export default [
+  {
+    ignores: ['node_modules', 'dist', 'build'],
+  },
   // ESLint’s recommended rules.
   eslint.configs.recommended,
 
@@ -38,7 +41,6 @@ export default [
       },
 
     },
-    ignores: ['node_modules', 'dist', 'build'],
   },
   // Override configuration for TypeScript files.
   {
