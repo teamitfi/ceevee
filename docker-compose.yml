@@ -24,6 +24,8 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+    env_file:
+      - ./api/.env
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@ceevee-db:5432/supabase"
     ports:
