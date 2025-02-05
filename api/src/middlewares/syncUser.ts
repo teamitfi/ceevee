@@ -1,9 +1,9 @@
-import type { CognitoUser } from "../config/cognito";
-import prisma from "../db.js";
+import type { CognitoUser } from '../config/cognito';
+import prisma from '../db.js';
 
 export const syncUser = async (decodedJwt: CognitoUser) => {
   if (!decodedJwt.sub || !decodedJwt.email) {
-    console.error("syncUser: Missing required fields in JWT");
+    console.error('syncUser: Missing required fields in JWT');
     return null;
   }
 
@@ -12,7 +12,7 @@ export const syncUser = async (decodedJwt: CognitoUser) => {
   });
 
   // Extract roles from Cognito Groups
-  const roles = decodedJwt["cognito:groups"] || ["user"];
+  const roles = decodedJwt['cognito:groups'] || ['user'];
 
   // Update roles only if different from stored values
   if (user) {

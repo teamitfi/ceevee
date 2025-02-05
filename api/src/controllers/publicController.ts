@@ -1,13 +1,13 @@
-import type { Request, Response } from "express";
+import type { Request, Response } from 'express';
 import {
   InitiateAuthCommand,
   NotAuthorizedException,
   UserNotFoundException
-} from "@aws-sdk/client-cognito-identity-provider";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import {syncUser} from "../middlewares/syncUser.js";
-import {cognitoClient} from "../config/cognito.js";
+} from '@aws-sdk/client-cognito-identity-provider';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import {syncUser} from '../middlewares/syncUser.js';
+import {cognitoClient} from '../config/cognito.js';
 
 dotenv.config();
 
@@ -17,12 +17,12 @@ dotenv.config();
  */
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
+  if (!email || !password) return res.status(400).json({ message: 'Email and password are required' });
 
   try {
     // Call AWS Cognito to authenticate the user
     const authCommand = new InitiateAuthCommand({
-      AuthFlow: "USER_PASSWORD_AUTH",
+      AuthFlow: 'USER_PASSWORD_AUTH',
       ClientId: process.env.COGNITO_CLIENT_ID!,
       AuthParameters: {
         USERNAME: email,
@@ -33,19 +33,19 @@ export const login = async (req: Request, res: Response) => {
     const authResponse = await cognitoClient.send(authCommand);
 
     if (!authResponse.AuthenticationResult || !authResponse.AuthenticationResult.IdToken) {
-      return res.status(401).json({ message: "Invalid login credentials" });
+      return res.status(401).json({ message: 'Invalid login credentials' });
     }
 
     // Decode the JWT to get the Cognito user data
     const decoded = jwt.decode(authResponse.AuthenticationResult.IdToken) as any;
     if (!decoded || !decoded.sub) {
-      return res.status(500).json({ message: "Invalid token payload" });
+      return res.status(500).json({ message: 'Invalid token payload' });
     }
 
     // Sync user immediately after login
     const user = await syncUser(decoded);
     if (!user) {
-      return res.status(500).json({ message: "User synchronization failed" });
+      return res.status(500).json({ message: 'User synchronization failed' });
     }
 
     // Return the AWS Cognito JWT token
@@ -57,11 +57,11 @@ export const login = async (req: Request, res: Response) => {
   } catch (error: any) {
     // Handle common Cognito errors
     if (error instanceof UserNotFoundException) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: 'User not found' });
     } else if (error instanceof NotAuthorizedException) {
-      return res.status(401).json({ message: "Incorrect username or password" });
+      return res.status(401).json({ message: 'Incorrect username or password' });
     } else {
-      return res.status(500).json({ message: "Authentication failed", error: error.message });
+      return res.status(500).json({ message: 'Authentication failed', error: error.message });
     }
   }
 };
@@ -72,11 +72,11 @@ export const login = async (req: Request, res: Response) => {
  */
 export const refreshToken = async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
-  if (!refreshToken) return res.status(400).json({ message: "Refresh token is required" });
+  if (!refreshToken) return res.status(400).json({ message: 'Refresh token is required' });
 
   try {
     const refreshCommand = new InitiateAuthCommand({
-      AuthFlow: "REFRESH_TOKEN_AUTH",
+      AuthFlow: 'REFRESH_TOKEN_AUTH',
       ClientId: process.env.COGNITO_CLIENT_ID!,
       AuthParameters: { REFRESH_TOKEN: refreshToken },
     });
@@ -84,7 +84,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     const authResponse = await cognitoClient.send(refreshCommand);
 
     if (!authResponse.AuthenticationResult || !authResponse.AuthenticationResult.IdToken) {
-      return res.status(401).json({ message: "Invalid refresh token" });
+      return res.status(401).json({ message: 'Invalid refresh token' });
     }
 
     res.json({
@@ -93,7 +93,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       expiresIn: authResponse.AuthenticationResult.ExpiresIn,
     });
   } catch (error: any) {
-    console.error("Refresh token error:", error);
-    return res.status(500).json({ message: "Token refresh failed", error: error.message });
+    console.error('Refresh token error:', error);
+    return res.status(500).json({ message: 'Token refresh failed', error: error.message });
   }
 };

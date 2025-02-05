@@ -1,11 +1,11 @@
 // eslint.config.mjs
-import eslint from "@eslint/js";
-import tsEslint from "typescript-eslint";
-import importPlugin from "eslint-plugin-import";
+import eslint from '@eslint/js';
+import tsEslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
 
 export default tsEslint.config({
   ignores: ['node_modules', 'dist', 'build'],
-  files: ['**/*.ts'],
+  files: ['**/*.mjs', '**/*.js', '**/*.ts'],
   extends: [
     eslint.configs.recommended,
     importPlugin.flatConfigs.recommended,
@@ -13,40 +13,41 @@ export default tsEslint.config({
   ],
   languageOptions: {
     // Use the latest ECMAScript version and module source type.
-    ecmaVersion: "latest",
-    sourceType: "module",
+    ecmaVersion: 'latest',
+    sourceType: 'module',
     // Define common Node.js globals.
     globals: {
-      __dirname: "readonly",
-      process: "readonly",
-      module: "readonly",
-      require: "readonly",
-      exports: "readonly",
-      console: "readonly"
+      __dirname: 'readonly',
+      process: 'readonly',
+      module: 'readonly',
+      require: 'readonly',
+      exports: 'readonly',
+      console: 'readonly'
     },
   },
   settings: {
     // Configure the import resolver to handle both JS and TS files.
-    "import/resolver": {
+    'import/resolver': {
       // You will also need to install and configure the TypeScript resolver
       // See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
-      "typescript": true,
-      "node": true,
+      'typescript': true,
+      'node': true,
     },
   },
   rules: {
-    "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-unused-vars": [
-      "error",
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
       {
-        "args": "all",
-        "argsIgnorePattern": "^_",
-        "caughtErrors": "all",
-        "caughtErrorsIgnorePattern": "^_",
-        "destructuredArrayIgnorePattern": "^_",
-        "varsIgnorePattern": "^_",
-        "ignoreRestSiblings": true
+        'args': 'all',
+        'argsIgnorePattern': '^_',
+        'caughtErrors': 'all',
+        'caughtErrorsIgnorePattern': '^_',
+        'destructuredArrayIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
+        'ignoreRestSiblings': true
       }
     ],
+    'quotes': ['error', 'single', { avoidEscape: true }],
   },
 });

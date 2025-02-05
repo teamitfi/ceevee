@@ -1,5 +1,5 @@
-import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
-import dotenv from "dotenv";
+import { CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
