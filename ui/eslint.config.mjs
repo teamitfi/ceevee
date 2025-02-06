@@ -5,7 +5,7 @@ import importPlugin from 'eslint-plugin-import';
 
 export default tsEslint.config({
   ignores: ['node_modules', 'dist', 'build'],
-  files: ['**/*.mjs', '**/*.js', '**/*.ts'],
+  files: ['**/*.mjs', '**/*.ts'],
   extends: [
     eslint.configs.recommended,
     importPlugin.flatConfigs.recommended,
