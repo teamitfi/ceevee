@@ -1,9 +1,9 @@
 # Database Setup
 
-This folder contains the configuration for the database using Supabase.
+This folder contains the configuration for the database using PostgreSQL.
 
 ## Files
-- `Dockerfile`: Defines the Supabase database image and setup.
+- `Dockerfile`: Defines the PostgreSQL database image and setup.
 - `init.sql`: Initializes the database with required tables and optional seed data.
 
 ## Running the Database as Docker container
@@ -29,4 +29,4 @@ This folder contains the configuration for the database using Supabase.
 
 - Connect to the db container
     ```bash
-    docker exec -it ceevee-db psql -U postgres -d supabase
+    docker exec -it ceevee-db psql -U user -d postgres

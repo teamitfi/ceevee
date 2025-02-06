@@ -47,10 +47,6 @@
     ```bash
    docker compose exec ceevee-api sh
 
-- Test the API
-   ```bash
-   curl -X GET http://localhost:4000/api/v1/private/users -H "Content-Type: application/json"
-
 ---
 
 # 🚀 API Authentication Flow (AWS Cognito + JWT)
