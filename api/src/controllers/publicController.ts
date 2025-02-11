@@ -50,9 +50,10 @@ export const login = async (req: Request, res: Response) => {
 
     // Return the AWS Cognito JWT token
     res.json({
-      token: authResponse.AuthenticationResult.IdToken,
+      accessToken: authResponse.AuthenticationResult.AccessToken,
       refreshToken: authResponse.AuthenticationResult.RefreshToken,
       expiresIn: authResponse.AuthenticationResult.ExpiresIn,
+      user,
     });
   } catch (error: any) {
     // Handle common Cognito errors
@@ -88,8 +89,8 @@ export const refreshToken = async (req: Request, res: Response) => {
     }
 
     res.json({
-      token: authResponse.AuthenticationResult.IdToken,
-      refreshToken: authResponse.AuthenticationResult.RefreshToken, // New refresh token
+      accessToken: authResponse.AuthenticationResult.AccessToken,
+      refreshToken: authResponse.AuthenticationResult.RefreshToken,
       expiresIn: authResponse.AuthenticationResult.ExpiresIn,
     });
   } catch (error: any) {

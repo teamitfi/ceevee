@@ -29,10 +29,10 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
   if (!authHeader) return res.status(401).json({ message: 'Access denied. No token provided.' });
 
   // Ensure token does not include "Bearer " prefix
-  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+  const accessToken = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
   // Verify JWT using Cognito’s public key
-  jwt.verify(token, getKey, { issuer: COGNITO_ISSUER }, (err, decoded) => {
+  jwt.verify(accessToken, getKey, { issuer: COGNITO_ISSUER }, (err, decoded) => {
     if (err) {
       if (err.name === 'TokenExpiredError') {
         return res.status(401).json({ message: 'Token expired. Please refresh your token.' });
@@ -43,7 +43,6 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const jwtPayload = decoded as JwtPayload;
     req.user = {
       cognitoId: jwtPayload.sub,
-      email: jwtPayload.email,
       roles: jwtPayload['cognito:groups'] || ['user'],
     };
     next();

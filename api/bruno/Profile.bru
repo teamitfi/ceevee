@@ -16,6 +16,6 @@ headers {
 }
 
 script:pre-request {
-  const token = bru.getVar("token");
+  const token = bru.getVar("accessToken");
   req.setHeader("Authorization", `Bearer ${token}`);
 }
