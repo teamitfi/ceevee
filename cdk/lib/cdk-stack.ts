@@ -34,7 +34,7 @@ const createCognito = (stack: cdk.Stack) => {
     authFlows: { userPassword: true },
     accessTokenValidity: cdk.Duration.minutes(30),
     idTokenValidity: cdk.Duration.minutes(30),
-    refreshTokenValidity: cdk.Duration.minutes(60),
+    refreshTokenValidity: cdk.Duration.days(30),
   });
 
   // Output Cognito Resources
