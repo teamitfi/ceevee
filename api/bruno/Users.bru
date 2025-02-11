@@ -12,10 +12,10 @@ get {
 
 headers {
   Content-Type: application/json
-  Authorization: Authorization: Bearer {{getVar("token")}}
+  Authorization: Authorization: Bearer {{getVar("accessToken")}}
 }
 
 script:pre-request {
-  const token = bru.getVar("accessToken");
-  req.setHeader("Authorization", `Bearer ${token}`);
+  const accessToken = bru.getVar("accessToken");
+  req.setHeader("Authorization", `Bearer ${accessToken}`);
 }

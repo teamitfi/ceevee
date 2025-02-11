@@ -11,7 +11,7 @@ export const COGNITO_ISSUER = `https://cognito-idp.${process.env.AWS_REGION}.ama
 export interface DatabaseUser {
   id: string;               // Unique ID from database
   cognitoId: string;        // AWS Cognito User ID
-  email?: string;            // User Email
+  email: string;            // User Email
   roles: ['admin', 'user']; // Roles (e.g., ["user", "admin"])
   createdAt: string;        // ISO Date format
 }

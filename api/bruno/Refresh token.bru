@@ -5,20 +5,13 @@ meta {
 }
 
 post {
-  url: http://localhost:4000/api/v1/public/login
+  url: http://localhost:4000/api/v1/public/refresh-token
   body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
-}
-
-body:json {
-  {
-    "email": "sebastian.nikkonen@teamit.fi",
-    "password": "MTKjpaQBteLJP@s*p9by97r3"
-  }
 }
 
 script:pre-request {
@@ -28,6 +21,4 @@ script:pre-request {
 
 script:post-response {
   bru.setVar("accessToken", res.body.accessToken);
-  bru.setVar("idToken", res.body.idToken);
-  bru.setVar("refreshToken", res.body.refreshToken)
 }
