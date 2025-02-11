@@ -32,6 +32,9 @@ const createCognito = (stack: cdk.Stack) => {
   const userPoolClient = new cognito.UserPoolClient(stack, "AuthUserPoolClient", {
     userPool: userPool,
     authFlows: { userPassword: true },
+    accessTokenValidity: cdk.Duration.minutes(30),
+    idTokenValidity: cdk.Duration.minutes(30),
+    refreshTokenValidity: cdk.Duration.minutes(60),
   });
 
   // Output Cognito Resources
