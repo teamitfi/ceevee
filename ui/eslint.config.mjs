@@ -2,15 +2,20 @@
 import eslint from '@eslint/js';
 import tsEslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 export default tsEslint.config({
-  ignores: ['node_modules', 'dist', 'build'],
-  files: ['**/*.mjs', '**/*.ts'],
+  ignores: ['node_modules/**/*', 'dist/**/*', 'build/**/*', '.react-router/**/*'],
+  files: ['**/*.mjs', '**/*.ts', '**/*.tsx'],
   extends: [
     eslint.configs.recommended,
     importPlugin.flatConfigs.recommended,
     tsEslint.configs.recommended,
+    reactPlugin.configs.flat.recommended,
+    { rules: reactHooks.configs.recommended.rules }
   ],
+  plugins: { 'react-hooks': reactHooks },
   languageOptions: {
     // Use the latest ECMAScript version and module source type.
     ecmaVersion: 'latest',
@@ -26,6 +31,9 @@ export default tsEslint.config({
     },
   },
   settings: {
+    react: {
+      version: 'detect',
+    },
     // Configure the import resolver to handle both JS and TS files.
     'import/resolver': {
       // You will also need to install and configure the TypeScript resolver
@@ -48,6 +56,7 @@ export default tsEslint.config({
         'ignoreRestSiblings': true
       }
     ],
+    'react/react-in-jsx-scope': 'off',
     'quotes': ['error', 'single', { avoidEscape: true }],
   },
 });
