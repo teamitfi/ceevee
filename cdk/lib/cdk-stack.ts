@@ -1,51 +1,139 @@
 import * as cdk from "aws-cdk-lib";
-import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as ecr from "aws-cdk-lib/aws-ecr";
+import * as ecs from "aws-cdk-lib/aws-ecs";
+import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
+import { createCognito } from "./aws-cognito";
 
-const createCognito = (stack: cdk.Stack) => {
-  // Create Cognito User Pool
-  const userPool = new cognito.UserPool(stack, "AuthUserPool", {
-    userPoolName: "CeeveeAuthUserPool",
-    selfSignUpEnabled: true,
-    signInAliases: { email: true },
-    autoVerify: { email: true },
-    passwordPolicy: {
-      minLength: 16,
-      requireUppercase: true,
-      requireDigits: true,
-      requireSymbols: true,
-    },
+// ECR Repository configuration
+const createEcrRepository = (stack: cdk.Stack): ecr.Repository => {
+  return new ecr.Repository(stack, "CeeveeRepository", {
+    repositoryName: "ceevee",
+    removalPolicy: cdk.RemovalPolicy.DESTROY, // for dev purposes
   });
+};
 
-  // Create predefined roles using Cognito User Groups
-  new cognito.CfnUserPoolGroup(stack, "AdminGroup", {
-    userPoolId: userPool.userPoolId,
-    groupName: "admin",
-    description: "Administrator role",
-  });
-  new cognito.CfnUserPoolGroup(stack, "UserGroup", {
-    userPoolId: userPool.userPoolId,
-    groupName: "user",
-    description: "Regular user",
-  });
+const getEcrRepository = (stack: cdk.Stack): ecr.IRepository => {
+  return ecr.Repository.fromRepositoryName(
+    stack,
+    "CeeveeRepository",
+    "ceevee"
+  );
+};
 
-  // Create App Client
-  const userPoolClient = new cognito.UserPoolClient(stack, "AuthUserPoolClient", {
-    userPool: userPool,
-    authFlows: { userPassword: true },
-    accessTokenValidity: cdk.Duration.minutes(30),
-    idTokenValidity: cdk.Duration.minutes(30),
-    refreshTokenValidity: cdk.Duration.days(30),
+// VPC configuration
+const createVpc = (stack: cdk.Stack): ec2.Vpc => {
+  return new ec2.Vpc(stack, "CeeveeVPC", {
+    maxAzs: 2,
+    natGateways: 1,
   });
+};
 
-  // Output Cognito Resources
-  new cdk.CfnOutput(stack, "AuthUserPoolId", { value: userPool.userPoolId });
-  new cdk.CfnOutput(stack, "AuthCeeveeClientId", { value: userPoolClient.userPoolClientId });
-}
+// ECS Cluster configuration
+const createEcsCluster = (stack: cdk.Stack, vpc: ec2.Vpc): ecs.Cluster => {
+  return new ecs.Cluster(stack, "CeeveeCluster", {
+    vpc,
+    clusterName: "ceevee-cluster",
+  });
+};
+
+// Fargate Service configuration
+// const createFargateService = (
+//   stack: cdk.Stack,
+//   cluster: ecs.Cluster
+// ): ecs_patterns.ApplicationLoadBalancedFargateService => {
+//   return new ecs_patterns.ApplicationLoadBalancedFargateService(
+//     stack,
+//     "CeeveeFargateService",
+//     {
+//       cluster,
+//       taskImageOptions: {
+//         image: ecs.ContainerImage.fromRegistry("amazon/amazon-ecs-sample"),
+//         containerPort: 80,
+//       },
+//       desiredCount: 1,
+//       publicLoadBalancer: true,
+//     }
+//   );
+// };
+
+const createDBFargateService = (
+  stack: cdk.Stack,
+  cluster: ecs.Cluster,
+  repository: ecr.Repository | ecr.IRepository
+): ecs_patterns.ApplicationLoadBalancedFargateService => {
+  return new ecs_patterns.ApplicationLoadBalancedFargateService(
+    stack,
+    "CeeveeDBFargateService",
+    {
+      cluster,
+      taskImageOptions: {
+        image: ecs.ContainerImage.fromEcrRepository(repository, 'db-latest'),
+        containerPort: 5432,
+        environment: {
+          POSTGRES_DB: "ceevee",
+          POSTGRES_USER: "postgres",
+          POSTGRES_PASSWORD: "xxv&6N8TxSEcT%NTdc$zXFhL",
+        }
+      },
+      desiredCount: 1,
+      publicLoadBalancer: false,
+      assignPublicIp: false // Ensure database is not publicly accessible
+    }
+  );
+};
+
+const createAPIFargateService = (
+  stack: cdk.Stack,
+  cluster: ecs.Cluster,
+  repository: ecr.Repository | ecr.IRepository
+): ecs_patterns.ApplicationLoadBalancedFargateService => {
+  return new ecs_patterns.ApplicationLoadBalancedFargateService(
+    stack,
+    "CeeveeApiService",
+    {
+      cluster,
+      taskImageOptions: {
+        image: ecs.ContainerImage.fromEcrRepository(repository, 'api-latest'),
+        containerPort: 4000, // Matches EXPOSE 4000 in Dockerfile
+        environment: {
+          NODE_ENV: "production",
+          DATABASE_URL: "postgresql://postgres:xxv&6N8TxSEcT%NTdc$zXFhL@localhost:5432/ceevee",
+          PORT: "4000"
+        },
+        command: ["node", "dist/server.js"]
+      },
+      desiredCount: 1,
+      publicLoadBalancer: true,
+      assignPublicIp: true,
+      healthCheckGracePeriod: cdk.Duration.seconds(60) // Give time for Prisma migrations
+    }
+  );
+};
 
 /**
- * Function to create the AWS Cognito Stack.
+ * Function to create the AWS Ceevee Stack.
  * @param stack - The CDK stack where resources will be added.
  */
-export const createCeeveeStack = (stack: cdk.Stack) => {
-  createCognito(stack)
-}
+// Main stack creation function
+export const createCeeveeStack = (stack: cdk.Stack): void => {
+  // Create infrastructure in order of dependencies
+  const vpc = createVpc(stack);
+  const cluster = createEcsCluster(stack, vpc);
+  const repository = createEcrRepository(stack)
+  // const repository = getEcrRepository(stack);
+  const dbService = createDBFargateService(stack, cluster, repository);
+  const apiService = createAPIFargateService(stack, cluster, repository);
+  
+  // Create Cognito resources
+  createCognito(stack);
+
+  // Add outputs for both services
+  new cdk.CfnOutput(stack, "DbLoadBalancerDNS", {
+    value: dbService.loadBalancer.loadBalancerDnsName,
+  });
+  
+  new cdk.CfnOutput(stack, "ApiLoadBalancerDNS", {
+    value: apiService.loadBalancer.loadBalancerDnsName,
+  });
+};
