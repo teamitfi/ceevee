@@ -1,0 +1,28 @@
+{
+    "family": "ceevee-db",
+    "executionRoleArn": "${ECS_EXECUTION_ROLE_ARN}",
+    "requiresCompatibilities": ["FARGATE"],
+    "networkMode": "awsvpc",
+    "cpu": "256",
+    "memory": "512",
+    "containerDefinitions": [{
+      "name": "db",
+      "image": "${REPOSITORY_URI}:db-latest",
+      "environment": [
+        {
+          "name": "POSTGRES_DB",
+          "value": "ceevee"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "value": "postgres"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "POSTGRES_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:eu-north-1:${AWS_ACCOUNT_ID}:secret:/ceevee/db:postgresPassword::"
+        }
+      ]
+    }]
+  }

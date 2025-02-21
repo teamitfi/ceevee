@@ -1,0 +1,40 @@
+{
+    "family": "ceevee-api",
+    "executionRoleArn": "${ECS_EXECUTION_ROLE_ARN}",
+    "requiresCompatibilities": ["FARGATE"],
+    "networkMode": "awsvpc",
+    "cpu": "256",
+    "memory": "512",
+    "containerDefinitions": [{
+      "name": "api",
+      "image": "${REPOSITORY_URI}:api-latest",
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "PORT",
+          "value": "4000"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "eu-north-1"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:eu-north-1:${AWS_ACCOUNT_ID}:secret:/ceevee/api:databaseUrl::"
+        },
+        {
+          "name": "COGNITO_CLIENT_ID",
+          "valueFrom": "arn:aws:secretsmanager:eu-north-1:${AWS_ACCOUNT_ID}:secret:/ceevee/api:cognitoClientId::"
+        },
+        {
+          "name": "COGNITO_USER_POOL_ID",
+          "valueFrom": "arn:aws:secretsmanager:eu-north-1:${AWS_ACCOUNT_ID}:secret:/ceevee/api:cognitoUserPoolId::"
+        }
+      ]
+    }]
+  }
