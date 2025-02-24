@@ -20,6 +20,9 @@ RUN yarn prisma generate
 # Use a smaller runtime image for production
 FROM node:22-alpine
 
+# Install curl for health checks (only needed in final image)
+RUN apk add --no-cache curl
+
 # Set working directory
 WORKDIR /app
 
