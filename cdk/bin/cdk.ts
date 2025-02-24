@@ -1,14 +1,40 @@
-import * as cdk from "aws-cdk-lib";
-import { createCeeveeStack } from "../lib/cdk-stack"; // Import the function
+import * as cdk from 'aws-cdk-lib';
+import { EcrStack } from '../lib/stacks/ecr-stack';
+import { NetworkStack } from '../lib/stacks/network-stack';
+import { DatabaseStack } from '../lib/stacks/db-stack';
+import { ApiStack } from '../lib/stacks/api-stack';
+import { CognitoStack } from '../lib/stacks/cognito-stack';
 
-// Initialize CDK App
+const region = "eu-north-1";
+const env = { region: region };
+
 const app = new cdk.App();
 
-// Create a new stack for Cognito
-const stack = new cdk.Stack(app, "CeeveeStack", { env: { region: "eu-north-1" } });
+// Infrastructure stacks
+const ecrStack = new EcrStack(app, 'CeeveeEcrStack', { env });
 
-// Apply Cognito stack function
-createCeeveeStack(stack);
+const networkStack = new NetworkStack(app, 'CeeveeNetworkStack', { env });
+const cognitoStack = new CognitoStack(app, 'CeeveeCognitoStack', { env });
 
-// Synthesize the stack
+// Database stack
+const databaseStack = new DatabaseStack(app, 'CeeveeDbStack', {
+  vpc: networkStack.vpc,
+  cluster: networkStack.cluster,
+  env
+});
+
+// API stack
+const apiStack = new ApiStack(app, 'CeeveeApiStack', {
+  cluster: networkStack.cluster,
+  repository: ecrStack.repository,
+  dbEndpoint: databaseStack.instance.instanceEndpoint.hostname,
+  dbSecret: databaseStack.secret,
+  cognitoClientId: cognitoStack.userPoolClient.userPoolClientId,
+  cognitoUserPoolId: cognitoStack.userPool.userPoolId,
+  env
+});
+
+// Add dependency
+apiStack.addDependency(databaseStack);
+
 app.synth();

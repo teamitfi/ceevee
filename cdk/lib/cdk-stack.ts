@@ -76,6 +76,8 @@ const createDBFargateService = (
           POSTGRES_PASSWORD: "xxv&6N8TxSEcT%NTdc$zXFhL",
         }
       },
+      minHealthyPercent: 100, // Ensure database availability
+      maxHealthyPercent: 200, // Allow rolling updates
       desiredCount: 1,
       publicLoadBalancer: false,
       assignPublicIp: false // Ensure database is not publicly accessible
@@ -103,6 +105,12 @@ const createAPIFargateService = (
         },
         command: ["node", "dist/server.js"]
       },
+      runtimePlatform: {
+        cpuArchitecture: ecs.CpuArchitecture.ARM64,
+        operatingSystemFamily: ecs.OperatingSystemFamily.LINUX
+      },
+      minHealthyPercent: 50,  // Allow more flexible updates
+      maxHealthyPercent: 200, // Allow parallel deployment
       desiredCount: 1,
       publicLoadBalancer: true,
       assignPublicIp: true,
