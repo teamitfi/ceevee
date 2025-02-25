@@ -1,12 +1,10 @@
 import * as cdk from "aws-cdk-lib";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 interface DatabaseStackProps extends cdk.StackProps {
   vpc: ec2.IVpc;
-  cluster: ecs.ICluster;
   bastionSecurityGroup: ec2.SecurityGroup;
 }
 
@@ -24,17 +22,17 @@ export class DatabaseStack extends cdk.Stack {
       allowAllOutbound: true
     });
 
-    // Allow access from ECS cluster
-    props.cluster.connections.allowTo(
-      dbSecurityGroup,
-      ec2.Port.tcp(5432),
-      'Allow access from ECS tasks'
-    );
-
     dbSecurityGroup.addIngressRule(
       props.bastionSecurityGroup,
       ec2.Port.tcp(5432),
       'Allow PostgreSQL access from bastion host'
+    );
+
+    // Allow access from anywhere in the VPC
+    dbSecurityGroup.addIngressRule(
+      ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
+      ec2.Port.tcp(5432),
+      'Allow PostgreSQL access from within VPC'
     );
 
     // Create RDS instance

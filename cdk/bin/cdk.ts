@@ -19,7 +19,6 @@ const cognitoStack = new CognitoStack(app, 'CeeveeCognitoStack', { env });
 // Database stack
 const databaseStack = new DatabaseStack(app, 'CeeveeDbStack', {
   vpc: networkStack.vpc,
-  cluster: networkStack.cluster,
   bastionSecurityGroup: networkStack.bastionSecurityGroup,
   env
 });
