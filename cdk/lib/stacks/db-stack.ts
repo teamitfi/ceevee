@@ -7,6 +7,7 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 interface DatabaseStackProps extends cdk.StackProps {
   vpc: ec2.IVpc;
   cluster: ecs.ICluster;
+  bastionSecurityGroup: ec2.SecurityGroup;
 }
 
 export class DatabaseStack extends cdk.Stack {
@@ -30,6 +31,12 @@ export class DatabaseStack extends cdk.Stack {
       'Allow access from ECS tasks'
     );
 
+    dbSecurityGroup.addIngressRule(
+      props.bastionSecurityGroup,
+      ec2.Port.tcp(5432),
+      'Allow PostgreSQL access from bastion host'
+    );
+
     // Create RDS instance
     this.instance = new rds.DatabaseInstance(this, 'CeeveeDatabase', {
       engine: rds.DatabaseInstanceEngine.postgres({
@@ -50,21 +57,14 @@ export class DatabaseStack extends cdk.Stack {
       }),
       backupRetention: cdk.Duration.days(7),
       deleteAutomatedBackups: false,
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
       storageEncrypted: true,
       allocatedStorage: 20,
       maxAllocatedStorage: 100,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
     });
 
     // Store reference to the secret
     this.secret = this.instance.secret!;
-
-    // Allow access from anywhere in the VPC
-    dbSecurityGroup.addIngressRule(
-      ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
-      ec2.Port.tcp(5432),
-      'Allow PostgreSQL access from within VPC'
-    );
 
     // Output the endpoint
     new cdk.CfnOutput(this, 'DatabaseEndpoint', {
@@ -72,7 +72,7 @@ export class DatabaseStack extends cdk.Stack {
       description: 'Database endpoint'
     });
 
-    new cdk.CfnOutput(this, 'DatabaseSecretArn', {
+    new cdk.CfnOutput(this, 'DatabaseSecretArn', {  
       value: this.secret.secretArn,
       description: 'Database credentials secret ARN'
     });

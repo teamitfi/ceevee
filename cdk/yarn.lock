@@ -757,9 +757,9 @@ async@^3.2.3:
   resolved "https://registry.npmjs.org/async/-/async-3.2.6.tgz"
   integrity sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==
 
-aws-cdk-lib@^2.180.0:
+aws-cdk-lib@^2.179.0:
   version "2.180.0"
-  resolved "https://registry.npmjs.org/aws-cdk-lib/-/aws-cdk-lib-2.180.0.tgz"
+  resolved "https://registry.npmjs.org/aws-cdk-lib/-/aws-cdk-lib-2.180.0.tgz#4da089dac39feba27f399075de782f7f6047a187"
   integrity sha512-ncYx3MGcLL397WAg6LOHV8G/5d0FkdoskiUscqFawLWioK75f0M6AIuif9kxrxLBvbMOncOfqhV8wIsCM1fquA==
   dependencies:
     "@aws-cdk/asset-awscli-v1" "^2.2.208"
@@ -777,10 +777,10 @@ aws-cdk-lib@^2.180.0:
     table "^6.8.2"
     yaml "1.10.2"
 
-aws-cdk@2.180.0:
-  version "2.1000.2"
-  resolved "https://registry.npmjs.org/aws-cdk/-/aws-cdk-2.1000.2.tgz#5c89404f24b09880bc9f7e9b4f7bd721be02b4bd"
-  integrity sha512-QsXqJhGWjHNqP7etgE3sHOTiDBXItmSKdFKgsm1qPMBabCMyFfmWZnEeUxfZ4sMaIoxvLpr3sqoWSNeLuUk4sg==
+aws-cdk@2.179.0:
+  version "2.179.0"
+  resolved "https://registry.npmjs.org/aws-cdk/-/aws-cdk-2.179.0.tgz#4caa93c54df4c9a586d03afb7423dfbf23f5997c"
+  integrity sha512-aA2+8S2g4UBQHkUEt0mYd16VLt/ucR+QfyUJi34LDKRAhOCNDjPCZ4z9z/JEDyuni0BdzsYA55pnpDN9tMULpA==
   optionalDependencies:
     fsevents "2.3.2"
 

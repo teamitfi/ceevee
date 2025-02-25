@@ -22,3 +22,8 @@ docker push "${REPOSITORY_URI}":api-"${VERSION}"
 
 echo "✅ All images pushed successfully with tags:"
 echo "   - ${REPOSITORY_URI}:api-latest, ${REPOSITORY_URI}:api-${VERSION}"
+
+ aws ssm start-session \
+    --target ceeveedbstack-ceeveedatabased257e2ed-oggxtcdd20av \
+    --document-name AWS-StartPortForwardingSessionToRemoteHost \
+    --parameters '{"host":["ceeveedbstack-ceeveedatabased257e2ed-oggxtcdd20av.ctey6skyspp7.eu-north-1.rds.amazonaws.com"],"portNumber":["3306"], "localPortNumber":["3306"]}'

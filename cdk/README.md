@@ -1,46 +1,152 @@
 # 🚀 AWS CDK - Infrastructure for Ceevee
 
-This module creates Ceevee CloudFormation stack using AWS CDK:
-- A **Cognito User Pool** for user authentication.
-- A **User Pool Client** for app-based authentication.
-- Outputs for **User Pool ID** and **App Client ID**.
+This module creates Ceevee infrastructure using AWS CDK, including:
+- VPC and Network Infrastructure
+- RDS PostgreSQL Database
+- Cognito User Authentication
+- ECR Container Registry
+- API Infrastructure
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Prerequisites
 
-## Useful commands
+### AWS CLI Setup
+```bash
+  # Configure AWS CLI with SSO
+  aws configure sso
+```
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+```bash
+  # Verify configuration
+  aws configure list
+  aws sts get-caller-identity
+```
+
+## Deployment
+
+### Infrastructure Deployment
+```bash
+  # Deploy VPC, ECR, and Cognito
+  yarn deploy:infra
+```
+
+```bash
+  # Deploy Database
+  yarn deploy:db
+```
+
+```bash
+  # Deploy API
+  yarn deploy:api
+```
+
+```bash
+  # Or deploy everything at once
+  yarn deploy:all
+```
+
+## Database Access Setup
+
+### 1. SSH Configuration
+```bash
+  # Set up SSH access to bastion host
+  ./scripts/setup-bastion-ssh.sh
+```
+
+```bash
+  # Test connection
+  ssh ceevee-bastion
+```
+
+### 2. Get Connection Details
+```bash
+  # Get bastion host DNS
+  aws cloudformation describe-stacks \
+    --stack-name CeeveeNetworkStack \
+    --query 'Stacks[0].Outputs[?OutputKey==`BastionHostPublicDNS`].OutputValue' \
+    --output text
+```
+
+  ```bash
+  # Get database credentials
+  aws secretsmanager get-secret-value \
+    --secret-id ceevee/database/credentials \
+    --query 'SecretString' \
+    --output text
+```
+
+```bash
+  # Get RDS endpoint
+  aws cloudformation describe-stacks \
+    --stack-name CeeveeDbStack \
+    --query 'Stacks[0].Outputs[?OutputKey==`DatabaseEndpoint`].OutputValue' \
+    --output text
+```
+
+```bash
+  # List all RDS instances
+  yarn db:list
+```
+
+### 3. IntelliJ Database Configuration
+
+1. Database Connection:
+```properties
+Host: <RDS endpoint>
+Port: 5432
+Database: ceevee
+Authentication: User & Password
+User: postgres
+Password: <from secrets manager>
+```
+
+2. SSH Tunnel:
+```properties
+✓ Use SSH tunnel
+Proxy Host: <bastion DNS>
+Proxy User: ec2-user
+Auth Type: OpenSSH config and authentication agent
+Private key: /Users/<your-username>/.ssh/ceevee/ceevee-bastion-key.pem
+```
+
+## Cleanup
+
+```bash
+  # Remove API infrastructure
+  yarn destroy:api
+```
+
+```bash
+  # Remove database
+  yarn destroy:db
+```
+
+```bash
+  # Remove base infrastructure
+  yarn destroy:infra
+```
+
+## Development
+
+```bash
+  # Compile TypeScript
+  yarn build
+```
+
+```bash
+  # Watch for changes
+  yarn watch
+```
+
+```bash
+  # Run tests
+  yarn test
+```
+
+```bash
+  # Preview changes
+  npx cdk diff
+```
 
 ## References
 - [AWS CDK Developer Guide](https://docs.aws.amazon.com/cdk/latest/guide/home.html)
-
-## Instructions
-
-- Configure AWS CLI with SSO:
-    ```bash
-    aws configure sso
-
-- Check if your AWS CLI is configured:
-    ```bash
-    aws configure list
-  
-- See AWS profile information:
-    ```bash
-    aws sts get-caller-identity
-
-- Synthesize the CloudFormation template:
-    ```bash
-    cdk synth
-
-- Deploy the stack:
-    ```bash
-    cdk deploy
-
-- Destroy the stack:
-    ```bash
-    cdk destroy
+- [AWS CLI Configuration Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html)

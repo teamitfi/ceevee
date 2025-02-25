@@ -20,6 +20,7 @@ const cognitoStack = new CognitoStack(app, 'CeeveeCognitoStack', { env });
 const databaseStack = new DatabaseStack(app, 'CeeveeDbStack', {
   vpc: networkStack.vpc,
   cluster: networkStack.cluster,
+  bastionSecurityGroup: networkStack.bastionSecurityGroup,
   env
 });
 
