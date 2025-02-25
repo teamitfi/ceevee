@@ -1,100 +1,59 @@
-# Welcome to React Router!
+# Ceevee UI
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+React Router based UI application for Ceevee project.
 
 ## Features
 
 - 🚀 Server-side rendering
 - ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
 - 🔒 TypeScript by default
 - 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- 🔄 React Router for routing
 
-## Getting Started
+## Development
 
 ### Installation
 
-Install the dependencies:
+```bash
+  yarn install
+```
+
+### Local Development
 
 ```bash
-npm install
+  yarn dev
 ```
 
-### Development
+Your application will be available at `http://localhost:3000`.
 
-Start the development server with HMR:
+### Production Build
 
 ```bash
-npm run dev
+  yarn build
 ```
 
-Your application will be available at `http://localhost:5173`.
+## Docker Operations
 
-## Building for Production
-
-Create a production build:
-
+Build and run the UI container:
 ```bash
-npm run build
+  docker compose up --build -d ceevee-ui
 ```
 
-## Deployment
-
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
-
+Stop the UI container:
 ```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+  docker compose down ceevee-ui
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+View UI logs:
+```bash
+  docker logs ceevee-ui --tail=100
 ```
 
-## Styling
+Access container shell:
+```bash
+  docker compose exec ceevee-ui sh
+```
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+## Environment Variables
 
----
-
-Built with ❤️ using React Router.
+Create `.env` file based on `.env.example` for local development or `.env.docker` for Docker deployment.

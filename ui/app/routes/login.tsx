@@ -32,8 +32,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return redirect('/login', { headers: await setCookie({ error: 'Invalid username/password' }) });
   }
 
-  const origin = 'http://localhost:4000';
-  const res = await fetch(`${origin}/api/v1/public/login`, {
+  const res = await fetch(`${process.env.API_ORIGIN}/api/v1/public/login`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: { 'Content-Type': 'application/json', credentials: 'include' }

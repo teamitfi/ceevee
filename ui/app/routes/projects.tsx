@@ -5,9 +5,8 @@ import {getAccessTokenCookie} from '~/sessions.server';
 import type {User} from '~/routes/login';
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
-  const origin = 'http://localhost:4000';
   const accessToken = await getAccessTokenCookie(request);
-  const res = await fetch(`${origin}/api/v1/private/users`, {
+  const res = await fetch(`${process.env.API_ORIGIN}/api/v1/private/users`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       credentials: 'include',

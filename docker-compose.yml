@@ -29,6 +29,21 @@ services:
         condition: service_healthy
     entrypoint: ["/bin/sh", "-c", "yarn prisma migrate deploy && exec node dist/server.js"]
 
+  ceevee-ui:
+    image: ceevee-ui
+    container_name: ceevee-ui
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports: 
+      - "3000:3000"
+    depends_on:
+      - ceevee-api
+    env_file:
+      - path: ./ui/.env.docker
+        required: false
+    entrypoint: ["/bin/sh", "-c", "yarn start"]
+
 volumes:
   db_data:
     driver: local
