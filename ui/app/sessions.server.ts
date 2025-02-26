@@ -1,31 +1,32 @@
-import { createCookie } from 'react-router';
+import { createCookie, type CookieOptions } from 'react-router';
 import type { LoginResponse } from '~/routes/login';
 
-const secret = process.env.SESSION_SECRET || 'default';
-const sameSite = 'lax';
+const getDomain = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.API_ORIGIN || undefined;
+  }
+  return undefined; // localhost for development
+};
 
-const sessionCookie = createCookie('session', {
+const cookieOptions: CookieOptions = {
   httpOnly: true,
   path: '/',
-  sameSite,
-  secrets: [secret],
+  sameSite: 'lax',
+  secrets: [process.env.SESSION_SECRET || 'default'],
   secure: process.env.NODE_ENV === 'production',
+  domain: getDomain()
+}
+
+const sessionCookie = createCookie('session', {
+  ...cookieOptions,
   maxAge: 1800,
 })
 const accessTokenCookie = createCookie('accessToken', {
-  httpOnly: true,
-  path: '/',
-  sameSite,
-  secrets: [secret],
-  secure: process.env.NODE_ENV === 'production',
+  ...cookieOptions,
   maxAge: 1800,
 })
 const refreshTokenCookie = createCookie('refreshToken', {
-  httpOnly: true,
-  path: '/',
-  sameSite,
-  secrets: [secret],
-  secure: process.env.NODE_ENV === 'production',
+  ...cookieOptions,
   maxAge: 3600,
 })
 
