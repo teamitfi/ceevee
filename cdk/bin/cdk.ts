@@ -4,6 +4,7 @@ import { NetworkStack } from '../lib/stacks/network-stack';
 import { DatabaseStack } from '../lib/stacks/db-stack';
 import { ApiStack } from '../lib/stacks/api-stack';
 import { CognitoStack } from '../lib/stacks/cognito-stack';
+import { UiStack } from '../lib/stacks/ui-stack';
 
 const region = "eu-north-1";
 const env = { region: region };
@@ -34,7 +35,16 @@ const apiStack = new ApiStack(app, 'CeeveeApiStack', {
   env
 });
 
+// UI stack
+const uiStack = new UiStack(app, 'CeeveeUiStack', {
+  cluster: networkStack.cluster,
+  repository: ecrStack.repository,
+  apiUrl: `http://${apiStack.apiUrl}`,
+  env
+});
+
 // Add dependency
 apiStack.addDependency(databaseStack);
+uiStack.addDependency(apiStack);
 
 app.synth();

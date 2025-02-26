@@ -10,13 +10,15 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
+    "deploy:all": "cdk deploy --all",
     "deploy:infra": "cdk deploy CeeveeEcrStack CeeveeNetworkStack CeeveeCognitoStack",
     "deploy:db": "cdk deploy CeeveeDbStack",
     "deploy:api": "cdk deploy CeeveeApiStack",
-    "deploy:all": "cdk deploy --all",
-    "destroy:api": "cdk destroy CeeveeApiStack",
-    "destroy:db": "cdk destroy CeeveeDbStack",
+    "deploy:ui": "cdk deploy CeeveeUiStack",
     "destroy:infra": "cdk destroy CeeveeEcrStack CeeveeNetworkStack CeeveeCognitoStack",
+    "destroy:db": "cdk destroy CeeveeDbStack",
+    "destroy:api": "cdk destroy CeeveeApiStack",
+    "destroy:ui": "cdk destroy CeeveeUiStack",
     "db:list": "aws rds describe-db-instances --output table"
   },
   "devDependencies": {

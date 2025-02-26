@@ -15,6 +15,8 @@ interface ApiStackProps extends cdk.StackProps {
 }
 
 export class ApiStack extends cdk.Stack {
+  public readonly apiUrl: string;
+
   constructor(scope: cdk.App, id: string, props: ApiStackProps) {
     super(scope, id, props);
 
@@ -87,6 +89,7 @@ export class ApiStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(5),
       }
     });
+    this.apiUrl = service.loadBalancer.loadBalancerDnsName;
 
     // Load balancer health check
     service.targetGroup.configureHealthCheck({

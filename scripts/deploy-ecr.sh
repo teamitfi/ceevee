@@ -20,5 +20,14 @@ docker tag ceevee-api:latest "${REPOSITORY_URI}":api-"${VERSION}"
 docker push "${REPOSITORY_URI}":api-latest
 docker push "${REPOSITORY_URI}":api-"${VERSION}"
 
+# Build and push UI image
+echo "🏗️  Building UI image..."
+docker build -t ceevee-ui:latest ./ui
+docker tag ceevee-ui:latest "${REPOSITORY_URI}":ui-latest
+docker tag ceevee-ui:latest "${REPOSITORY_URI}":ui-"${VERSION}"
+docker push "${REPOSITORY_URI}":ui-latest
+docker push "${REPOSITORY_URI}":ui-"${VERSION}"
+
 echo "✅ All images pushed successfully with tags:"
 echo "   - ${REPOSITORY_URI}:api-latest, ${REPOSITORY_URI}:api-${VERSION}"
+echo "   - ${REPOSITORY_URI}:ui-latest, ${REPOSITORY_URI}:ui-${VERSION}"
