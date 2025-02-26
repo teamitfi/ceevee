@@ -1,21 +1,27 @@
 import * as cdk from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import { NetworkStack } from "./network-stack";
+import { DatabaseStack } from "./db-stack";
+import { CognitoStack } from "./cognito-stack";
+import { EcrStack } from "./ecr-stack";
 
 interface ApiStackProps extends cdk.StackProps {
-  cluster: ecs.ICluster;
-  repository: ecr.IRepository;
-  dbSecret: secretsmanager.ISecret;
-  dbEndpoint: string;
-  cognitoClientId: string;
-  cognitoUserPoolId: string;
+  networkStack: NetworkStack;
+  databaseStack: DatabaseStack;
+  cognitoStack: CognitoStack;
+  ecrStack: EcrStack;
+  certificate?: acm.ICertificate; // Optional certificate for HTTPS
 }
 
 export class ApiStack extends cdk.Stack {
-  public readonly apiUrl: string;
+  public readonly service: ecs_patterns.ApplicationLoadBalancedFargateService;
 
   constructor(scope: cdk.App, id: string, props: ApiStackProps) {
     super(scope, id, props);
@@ -25,10 +31,10 @@ export class ApiStack extends cdk.Stack {
       secretName: 'ceevee/api/environment',
       secretObjectValue: {
         DATABASE_URL: cdk.SecretValue.unsafePlainText(
-          `postgresql://${props.dbSecret.secretValueFromJson('username').unsafeUnwrap()}:${props.dbSecret.secretValueFromJson('password').unsafeUnwrap()}@${props.dbEndpoint}:5432/ceevee`
+          `postgresql://${props.databaseStack.secret.secretValueFromJson('username').unsafeUnwrap()}:${props.databaseStack.secret.secretValueFromJson('password').unsafeUnwrap()}@${props.databaseStack.instance.instanceEndpoint.hostname}:5432/ceevee`
         ),
-        COGNITO_CLIENT_ID: cdk.SecretValue.unsafePlainText(props.cognitoClientId),
-        COGNITO_USER_POOL_ID: cdk.SecretValue.unsafePlainText(props.cognitoUserPoolId),
+        COGNITO_CLIENT_ID: cdk.SecretValue.unsafePlainText(props.cognitoStack.userPoolClient.userPoolClientId),
+        COGNITO_USER_POOL_ID: cdk.SecretValue.unsafePlainText(props.cognitoStack.userPool.userPoolId),
       }
     });
 
@@ -39,47 +45,69 @@ export class ApiStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY // Be careful with this in production
     });
 
-    const service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, "CeeveeApiService", {
+    this.service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, "CeeveeApiService", {
+      // Computing resources
       cpu: 2048,
       memoryLimitMiB: 4096,
-      cluster: props.cluster,
+      cluster: props.networkStack.cluster,
+
+      // Container configuration
       taskImageOptions: {
+        // Enable CloudWatch logging
         enableLogging: true,
         logDriver: ecs.LogDrivers.awsLogs({
           logGroup,
           streamPrefix: 'ecs'
         }),
-        image: ecs.ContainerImage.fromEcrRepository(props.repository, 'api-latest'),
+
+        // Container image and port
+        image: ecs.ContainerImage.fromEcrRepository(props.ecrStack.repository, 'api-latest'),
         containerPort: 4000,
+
+        // Environment variables
         environment: {
           NODE_ENV: "production",
           PORT: "4000",
           AWS_REGION: this.region,
         },
+
+        // Secrets injected as environment variables
         secrets: {
           DATABASE_URL: ecs.Secret.fromSecretsManager(apiSecret, 'DATABASE_URL'),
           COGNITO_CLIENT_ID: ecs.Secret.fromSecretsManager(apiSecret, 'COGNITO_CLIENT_ID'),
           COGNITO_USER_POOL_ID: ecs.Secret.fromSecretsManager(apiSecret, 'COGNITO_USER_POOL_ID'),
         },
+
+        // Startup command
         command: [
           "/bin/sh", 
           "-c", 
           "yarn prisma migrate deploy && exec node dist/server.js"
         ],
       },
+
+      // Deployment configuration
       deploymentController: {
         type: ecs.DeploymentControllerType.ECS
       },
-      circuitBreaker: { rollback: true },
+      circuitBreaker: { rollback: true }, // Auto-rollback on failed deployments
+
+      // Runtime configuration
       runtimePlatform: {
         cpuArchitecture: ecs.CpuArchitecture.ARM64,
         operatingSystemFamily: ecs.OperatingSystemFamily.LINUX
       },
+
+      // Service scaling configuration
       minHealthyPercent: 50,
       maxHealthyPercent: 200,
       desiredCount: 1,
-      publicLoadBalancer: true,
-      assignPublicIp: true,
+
+      // Networking configuration
+      publicLoadBalancer: true, // Creates internet-facing ALB
+      assignPublicIp: true, // Assigns public IP to tasks
+      
+      // Container health check
       healthCheckGracePeriod: cdk.Duration.seconds(60),
       healthCheck: {
         command: ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"],
@@ -89,10 +117,9 @@ export class ApiStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(5),
       }
     });
-    this.apiUrl = service.loadBalancer.loadBalancerDnsName;
 
     // Load balancer health check
-    service.targetGroup.configureHealthCheck({
+    this.service.targetGroup.configureHealthCheck({
       path: "/health",
       healthyThresholdCount: 2,
       unhealthyThresholdCount: 3,
@@ -101,8 +128,27 @@ export class ApiStack extends cdk.Stack {
     });
 
     // Grant permissions to secrets
-    props.dbSecret.grantRead(service.taskDefinition.taskRole);
-    apiSecret.grantRead(service.taskDefinition.taskRole);
+    props.databaseStack.secret.grantRead(this.service.taskDefinition.taskRole);
+    apiSecret.grantRead(this.service.taskDefinition.taskRole);
+
+    // // Create HTTPS listener
+    // if (props.certificate) {
+    //   const httpsListener = loadBalancer.addListener('HttpsListener', {
+    //     port: 443,
+    //     protocol: elbv2.ApplicationProtocol.HTTPS,
+    //     certificates: [props.certificate],
+    //     defaultTargetGroups: [targetGroup],
+    //   });
+    // }
+
+    // // Create HTTP listener with redirect
+    // const httpListener = loadBalancer.addListener('HttpListener', {
+    //   port: 80,
+    //   defaultAction: elbv2.ListenerAction.redirect({
+    //     protocol: 'HTTPS',
+    //     port: '443',
+    //   }),
+    // });
 
     // Add output for log group name
     new cdk.CfnOutput(this, 'LogGroupName', {

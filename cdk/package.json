@@ -15,10 +15,12 @@
     "deploy:db": "cdk deploy CeeveeDbStack",
     "deploy:api": "cdk deploy CeeveeApiStack",
     "deploy:ui": "cdk deploy CeeveeUiStack",
+    "deploy:cloudfront": "cdk deploy CeeveeCloudFrontStack",
     "destroy:infra": "cdk destroy CeeveeEcrStack CeeveeNetworkStack CeeveeCognitoStack",
     "destroy:db": "cdk destroy CeeveeDbStack",
     "destroy:api": "cdk destroy CeeveeApiStack",
     "destroy:ui": "cdk destroy CeeveeUiStack",
+    "destroy:cloudfront": "cdk destroy CeeveeCloudFrontStack",
     "db:list": "aws rds describe-db-instances --output table"
   },
   "devDependencies": {

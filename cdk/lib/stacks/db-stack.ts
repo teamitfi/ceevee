@@ -2,10 +2,10 @@ import * as cdk from "aws-cdk-lib";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import { NetworkStack } from "./network-stack";
 
 interface DatabaseStackProps extends cdk.StackProps {
-  vpc: ec2.IVpc;
-  bastionSecurityGroup: ec2.SecurityGroup;
+  networkStack: NetworkStack;
 }
 
 export class DatabaseStack extends cdk.Stack {
@@ -17,20 +17,20 @@ export class DatabaseStack extends cdk.Stack {
 
     // Create security group for RDS
     const dbSecurityGroup = new ec2.SecurityGroup(this, 'DbSecurityGroup', {
-      vpc: props.vpc,
+      vpc: props.networkStack.vpc,
       description: 'Security group for RDS PostgreSQL',
       allowAllOutbound: true
     });
 
     dbSecurityGroup.addIngressRule(
-      props.bastionSecurityGroup,
+      props.networkStack.bastionSecurityGroup,
       ec2.Port.tcp(5432),
       'Allow PostgreSQL access from bastion host'
     );
 
     // Allow access from anywhere in the VPC
     dbSecurityGroup.addIngressRule(
-      ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
+      ec2.Peer.ipv4(props.networkStack.vpc.vpcCidrBlock),
       ec2.Port.tcp(5432),
       'Allow PostgreSQL access from within VPC'
     );
@@ -44,7 +44,7 @@ export class DatabaseStack extends cdk.Stack {
         ec2.InstanceClass.T4G,
         ec2.InstanceSize.MICRO
       ),
-      vpc: props.vpc,
+      vpc: props.networkStack.vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
       },
