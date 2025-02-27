@@ -6,6 +6,7 @@ import { ApiStack } from '../lib/stacks/api-stack';
 import { CognitoStack } from '../lib/stacks/cognito-stack';
 import { UiStack } from '../lib/stacks/ui-stack';
 import { CeeveeCloudFrontStack } from '../lib/stacks/cloudfront-stack';
+import { N8nStack } from '../lib/stacks/n8n-stack';
 
 const region = "eu-north-1";
 const env = { region };
@@ -39,12 +40,21 @@ const uiStack = new UiStack(app, 'CeeveeUiStack', {
 });
 uiStack.addDependency(apiStack);
 
+// Add N8N stack
+const n8nStack = new N8nStack(app, 'CeeveeN8nStack', {
+  env,
+  networkStack,
+  databaseStack
+});
+n8nStack.addDependency(databaseStack);
+
 // CloudFront stack
 const cloudFrontStack = new CeeveeCloudFrontStack(app, 'CeeveeCloudFrontStack', {
   env: { region: 'us-east-1' },
   crossRegionReferences: true,
   apiStack,
   uiStack,
+  n8nStack,
   region
 });
 cloudFrontStack.addDependency(uiStack);

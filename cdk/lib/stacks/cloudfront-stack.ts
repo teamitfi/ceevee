@@ -6,10 +6,12 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { ApiStack } from './api-stack';
 import { UiStack } from './ui-stack';
+import { N8nStack } from './n8n-stack';
 
 interface CeeveeCloudFrontStackProps extends cdk.StackProps {
   apiStack: ApiStack;
   uiStack: UiStack;
+  n8nStack: N8nStack;
   region: string;
 }
 
@@ -17,7 +19,8 @@ export class CeeveeCloudFrontStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: CeeveeCloudFrontStackProps) {
     super(scope, id, props);
 
-    const distribution = new cloudfront.Distribution(this, 'Distribution', {
+    // Main distribution for UI and API
+    const mainDistribution = new cloudfront.Distribution(this, 'Distribution', {
       defaultBehavior: {
         origin: new origins.LoadBalancerV2Origin(props.uiStack.service.loadBalancer, {
           protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
@@ -42,10 +45,24 @@ export class CeeveeCloudFrontStack extends cdk.Stack {
       },
     });
 
+    // Separate distribution for n8n
+    const n8nDistribution = new cloudfront.Distribution(this, 'N8nDistribution', {
+      defaultBehavior: {
+        origin: new origins.LoadBalancerV2Origin(props.n8nStack.service.loadBalancer, {
+          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+        }),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
+        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+      }
+    });
+
     const name = '/ceevee/cloudfront/url';
     const parameters = {
       Name: name,
-      Value: distribution.distributionDomainName,
+      Value: mainDistribution.distributionDomainName,
       Type: 'String',
       Description: 'CloudFront Distribution Domain Name'
     }
@@ -74,10 +91,17 @@ export class CeeveeCloudFrontStack extends cdk.Stack {
       ])
     });
 
-    // Add output for CloudFront URL
+    // Add output for CloudFront URL for ui and api
     new cdk.CfnOutput(this, 'DistributionDomainName', {
-      value: distribution.distributionDomainName,
+      value: mainDistribution.distributionDomainName,
       description: 'CloudFront Distribution Domain Name'
+    });
+
+
+    // Add output for CloudFront URL for n8n
+    new cdk.CfnOutput(this, 'N8nDistributionDomainName', {
+      value: n8nDistribution.distributionDomainName,
+      description: 'N8n CloudFront Distribution Domain Name'
     });
   }
 }
