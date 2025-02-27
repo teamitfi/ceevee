@@ -13,7 +13,7 @@ export class CognitoStack extends cdk.Stack {
     // Create User Pool
     this.userPool = new cognito.UserPool(this, "CeeveeUserPool", {
       userPoolName: "ceevee-user-pool",
-      selfSignUpEnabled: true,
+      selfSignUpEnabled: false,
       signInAliases: {
         email: true,
       },
@@ -27,7 +27,7 @@ export class CognitoStack extends cdk.Stack {
         },
       },
       passwordPolicy: {
-        minLength: 16, // Match the original config
+        minLength: 16,
         requireLowercase: true,
         requireUppercase: true,
         requireDigits: true,

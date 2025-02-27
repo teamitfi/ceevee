@@ -3,15 +3,15 @@ import type { LoginResponse } from '~/routes/login';
 
 const getDomain = () => {
   if (process.env.NODE_ENV === 'production') {
-    return process.env.API_ORIGIN || undefined;
+    return process.env.CLOUDFRONT_URL || undefined;
   }
-  return undefined; // localhost for development
+  return undefined;
 };
 
 const cookieOptions: CookieOptions = {
   httpOnly: true,
   path: '/',
-  sameSite: 'lax',
+  sameSite: 'strict',
   secrets: [process.env.SESSION_SECRET || 'default'],
   secure: process.env.NODE_ENV === 'production',
   domain: getDomain()

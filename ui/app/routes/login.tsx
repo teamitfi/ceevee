@@ -3,6 +3,7 @@ import { Box, Button, Card, Container, Flex, Grid, Text, TextField } from '@radi
 import { type ActionFunctionArgs, data, Form, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/login';
 import { getSessionCookie, setCookie, setCookies } from '~/sessions.server';
+import { getApiUrl } from '~/utils';
 
 export interface User {
   id: string;               // Unique ID from database
@@ -32,7 +33,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return redirect('/login', { headers: await setCookie({ error: 'Invalid username/password' }) });
   }
 
-  const res = await fetch(`${process.env.API_ORIGIN}/api/v1/public/login`, {
+  const res = await fetch(`${getApiUrl()}/api/v1/public/login`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: { 'Content-Type': 'application/json', credentials: 'include' }

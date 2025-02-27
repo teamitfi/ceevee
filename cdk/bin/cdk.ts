@@ -8,7 +8,7 @@ import { UiStack } from '../lib/stacks/ui-stack';
 import { CeeveeCloudFrontStack } from '../lib/stacks/cloudfront-stack';
 
 const region = "eu-north-1";
-const env = { region: region };
+const env = { region };
 
 const app = new cdk.App();
 
@@ -18,24 +18,24 @@ const networkStack = new NetworkStack(app, 'CeeveeNetworkStack', { env });
 const cognitoStack = new CognitoStack(app, 'CeeveeCognitoStack', { env });
 
 // Database stack
-const databaseStack = new DatabaseStack(app, 'CeeveeDbStack', { networkStack, env });
+const databaseStack = new DatabaseStack(app, 'CeeveeDbStack', { env, networkStack });
 
 // API stack
 const apiStack = new ApiStack(app, 'CeeveeApiStack', {
+  env,
   ecrStack,
   networkStack,
   databaseStack,
-  cognitoStack,
-  env
+  cognitoStack
 });
 apiStack.addDependency(databaseStack);
 
 // UI stack
 const uiStack = new UiStack(app, 'CeeveeUiStack', {
+  env,
   ecrStack,
   networkStack,
-  apiStack,
-  env
+  apiStack
 });
 uiStack.addDependency(apiStack);
 
@@ -44,7 +44,8 @@ const cloudFrontStack = new CeeveeCloudFrontStack(app, 'CeeveeCloudFrontStack', 
   env: { region: 'us-east-1' },
   crossRegionReferences: true,
   apiStack,
-  uiStack
+  uiStack,
+  region
 });
 cloudFrontStack.addDependency(uiStack);
 cloudFrontStack.addDependency(apiStack);
