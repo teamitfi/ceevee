@@ -37,7 +37,7 @@ export class ApiStack extends cdk.Stack {
     const logGroup = new logs.LogGroup(this, 'ApiServiceLogs', {
       logGroupName: '/aws/ecs/ceevee-api',
       retention: logs.RetentionDays.ONE_WEEK,
-      removalPolicy: cdk.RemovalPolicy.DESTROY // Be careful with this in production
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
     this.service = new ecs_patterns.ApplicationLoadBalancedFargateService(this, "CeeveeApiService", {

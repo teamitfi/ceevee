@@ -66,7 +66,7 @@ This module creates Ceevee infrastructure using AWS CDK, including:
     --output text
 ```
 
-  ```bash
+```bash
   # Get database credentials
   aws secretsmanager get-secret-value \
     --secret-id ceevee/database/credentials \
@@ -145,6 +145,10 @@ Private key: /Users/<your-username>/.ssh/ceevee/ceevee-bastion-key.pem
 ```bash
   # Preview changes
   npx cdk diff
+```
+
+```
+  yarn ts-node scripts/create-user.ts "<username>" "<password>"
 ```
 
 ## References

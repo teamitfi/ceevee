@@ -22,7 +22,7 @@ export class UiStack extends cdk.Stack {
     const logGroup = new logs.LogGroup(this, 'UiServiceLogs', {
       logGroupName: '/aws/ecs/ceevee-ui',
       retention: logs.RetentionDays.ONE_WEEK,
-      removalPolicy: cdk.RemovalPolicy.DESTROY 
+      removalPolicy: cdk.RemovalPolicy.DESTROY
     });
 
     // Create the Fargate service with an Application Load Balancer
@@ -63,7 +63,7 @@ export class UiStack extends cdk.Stack {
       },
 
       // Deployment configuration
-      circuitBreaker: { rollback: true },        // Auto-rollback on failed deployments
+      circuitBreaker: { rollback: true }, // Auto-rollback on failed deployments
       healthCheckGracePeriod: cdk.Duration.seconds(60),
 
       // Service scaling configuration
@@ -73,7 +73,7 @@ export class UiStack extends cdk.Stack {
 
     // Configure ALB health check
     this.service.targetGroup.configureHealthCheck({
-      path: "/",                                 // Root path for UI health check
+      path: "/", // Root path for UI health check
       healthyThresholdCount: 2,
       unhealthyThresholdCount: 3,
       timeout: cdk.Duration.seconds(5),

@@ -58,7 +58,8 @@ export class DatabaseStack extends cdk.Stack {
       storageEncrypted: true,
       allocatedStorage: 20,
       maxAllocatedStorage: 100,
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
+      removalPolicy: cdk.RemovalPolicy.RETAIN,  // Never delete automatically
+      deletionProtection: true,
     });
 
     // Store reference to the secret
