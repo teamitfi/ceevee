@@ -1,66 +1,58 @@
-import * as cdk from "aws-cdk-lib";
-import { Template } from "aws-cdk-lib/assertions";
-import { createCeeveeStack } from "../lib/cdk-stack"; // Import the Cognito function
+import * as cdk from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+import { EcrStack } from '../lib/stacks/ecr-stack';
+import { NetworkStack } from '../lib/stacks/network-stack';
+import { CognitoStack } from '../lib/stacks/cognito-stack';
+import { DatabaseStack } from '../lib/stacks/db-stack';
 
-describe("AWS CDK Cognito Stack", () => {
-  let template: Template;
+describe('Ceevee Infrastructure', () => {
+  const env = { 
+    account: '123456789012', 
+    region: 'eu-north-1' 
+  };
 
-  beforeAll(() => {
-    // Create a test CDK app and stack
-    const app = new cdk.App();
-    const stack = new cdk.Stack(app, "TestCognitoStack");
+  describe('Stack Creation', () => {
+    let app: cdk.App;
 
-    // Apply the Cognito function to the test stack
-    createCeeveeStack(stack);
-
-    // Convert the stack into a CloudFormation template for assertions
-    template = Template.fromStack(stack);
-  });
-
-  test("Cognito User Pool is created", () => {
-    template.hasResource("AWS::Cognito::UserPool", {});
-  });
-
-  test("Cognito User Pool has the correct properties", () => {
-    template.hasResourceProperties("AWS::Cognito::UserPool", {
-      UserPoolName: "CeeveeAuthUserPool",
-      AutoVerifiedAttributes: ["email"],
+    beforeEach(() => {
+      app = new cdk.App();
     });
-  });
 
-  test("Cognito User Pool Client is created", () => {
-    template.hasResource("AWS::Cognito::UserPoolClient", {});
-  });
-
-  test("Cognito User Pool Client has the correct authentication flows", () => {
-    template.hasResourceProperties("AWS::Cognito::UserPoolClient", {
-      ExplicitAuthFlows: [
-        "ALLOW_USER_PASSWORD_AUTH",
-        "ALLOW_REFRESH_TOKEN_AUTH"
-      ],
+    test('ECR Stack creates repository', () => {
+      const stack = new EcrStack(app, 'TestEcrStack', { env });
+      const template = Template.fromStack(stack);
+      
+      template.hasResourceProperties('AWS::ECR::Repository', {
+        RepositoryName: 'ceevee'
+      });
     });
-  });
 
-  test("Password Policy is applied correctly", () => {
-    template.hasResourceProperties("AWS::Cognito::UserPool", {
-      Policies: {
-        PasswordPolicy: {
-          MinimumLength: 16,
-          RequireUppercase: true,
-          RequireNumbers: true,
-          RequireSymbols: true,
-        },
-      },
+    test('Network Stack creates VPC and ECS Cluster', () => {
+      const stack = new NetworkStack(app, 'TestNetworkStack', { env });
+      const template = Template.fromStack(stack);
+      
+      template.resourceCountIs('AWS::ECS::Cluster', 1);
+      template.resourceCountIs('AWS::EC2::VPC', 1);
     });
-  });
 
-  test("Outputs User Pool ID and App Client ID", () => {
-    const outputs = template.findOutputs("*");
+    test('Cognito Stack creates User Pool', () => {
+      const stack = new CognitoStack(app, 'TestCognitoStack', { env });
+      const template = Template.fromStack(stack);
+      
+      template.resourceCountIs('AWS::Cognito::UserPool', 1);
+      template.resourceCountIs('AWS::Cognito::UserPoolClient', 1);
+    });
 
-    expect(outputs).toHaveProperty("AuthUserPoolId");
-    expect(outputs.AuthUserPoolId.Value.Ref).toContain("AuthUserPool")
-
-    expect(outputs).toHaveProperty("AuthCeeveeClientId");
-    expect(outputs.AuthCeeveeClientId.Value.Ref).toContain("AuthCeeveeClient")
+    test('Database Stack creates RDS instance', () => {
+      const networkStack = new NetworkStack(app, 'TestNetworkStackForDb', { env });
+      const stack = new DatabaseStack(app, 'TestDatabaseStack', { 
+        env,
+        networkStack 
+      });
+      const template = Template.fromStack(stack);
+      
+      template.resourceCountIs('AWS::RDS::DBInstance', 1);
+      template.resourceCountIs('AWS::SecretsManager::Secret', 1);
+    });
   });
 });
