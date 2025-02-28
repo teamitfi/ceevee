@@ -1,8 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
-import * as cr from 'aws-cdk-lib/custom-resources';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { ApiStack } from './api-stack';
 import { UiStack } from './ui-stack';
@@ -40,38 +38,6 @@ export class CeeveeCloudFrontStack extends cdk.Stack {
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         },
       },
-    });
-
-    const name = '/ceevee/cloudfront/url';
-    const parameters = {
-      Name: name,
-      Value: distribution.distributionDomainName,
-      Type: 'String',
-      Description: 'CloudFront Distribution Domain Name'
-    }
-    // Create a Custom Resource to save parameter in base region
-    new cr.AwsCustomResource(this, 'CrossRegionParameter', {
-      onCreate: {
-        service: 'SSM',
-        action: 'putParameter',
-        parameters: parameters,
-        region: props.region,
-        physicalResourceId: cr.PhysicalResourceId.of(name)
-      },
-      onUpdate: {
-        service: 'SSM',
-        action: 'putParameter',
-        parameters: {...parameters, Overwrite: true },
-        region: props.region,
-        physicalResourceId: cr.PhysicalResourceId.of(name)
-      },
-      policy: cr.AwsCustomResourcePolicy.fromStatements([
-        new iam.PolicyStatement({
-          actions: ['ssm:PutParameter'],
-          resources: [`arn:aws:ssm:${props.region}:${this.account}:parameter${name}`],
-          effect: iam.Effect.ALLOW
-        })
-      ])
     });
 
     // Add output for CloudFront URL
