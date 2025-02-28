@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NetworkStack } from "./network-stack";
 import { EcrStack } from "./ecr-stack";
 import { ApiStack } from "./api-stack";
@@ -17,6 +18,17 @@ export class UiStack extends cdk.Stack {
 
   constructor(scope: cdk.App, id: string, props: UiStackProps) {
     super(scope, id, props);
+
+    // Create a secret for session
+    const sessionSecret = new secretsmanager.Secret(this, 'SessionSecret', {
+      secretName: 'ceevee/ui/session-secret',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({}),
+        generateStringKey: 'key',
+        excludePunctuation: true,
+        passwordLength: 32
+      }
+    });
 
     // Create log group for UI service logs with 1-week retention
     const logGroup = new logs.LogGroup(this, 'UiServiceLogs', {
@@ -42,6 +54,10 @@ export class UiStack extends cdk.Stack {
           logGroup,
           streamPrefix: 'ecs'
         }),
+        // Secrets for session management
+        secrets: {
+          SESSION_SECRET: ecs.Secret.fromSecretsManager(sessionSecret, 'key')
+        },
         // Environment variables including API endpoint
         environment: {
           NODE_ENV: "production",
@@ -70,6 +86,9 @@ export class UiStack extends cdk.Stack {
       minHealthyPercent: 100,
       maxHealthyPercent: 200,
     });
+    
+    // Grant read access to the secret
+    sessionSecret.grantRead(this.service.taskDefinition.taskRole);
 
     // Configure ALB health check
     this.service.targetGroup.configureHealthCheck({
