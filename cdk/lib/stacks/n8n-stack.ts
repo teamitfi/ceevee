@@ -17,6 +17,18 @@ export class N8nStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props: N8nStackProps) {
     super(scope, id, props);
 
+    // Create a secret for n8n encryption key
+    const encryptionKeySecret = new secretsmanager.Secret(this, 'N8nEncryptionKey', {
+      secretName: 'ceevee/n8n/encryption-key',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({}),
+        generateStringKey: 'key',
+        // Generate a secure random string for encryption
+        excludePunctuation: true,
+        passwordLength: 32
+      }
+    });
+
     // Create a secret for n8n environment variables
     const n8nSecret = new secretsmanager.Secret(this, 'N8nSecret', {
       secretName: 'ceevee/n8n/environment',
@@ -26,7 +38,8 @@ export class N8nStack extends cdk.Stack {
         DB_POSTGRESDB_PORT: cdk.SecretValue.unsafePlainText('5432'),
         DB_POSTGRESDB_USER: props.databaseStack.secret.secretValueFromJson('username'),
         DB_POSTGRESDB_PASSWORD: props.databaseStack.secret.secretValueFromJson('password'),
-        N8N_ENCRYPTION_KEY: cdk.SecretValue.unsafePlainText('your-random-encryption-key'),
+        // Reference the encryption key from the separate secret
+        N8N_ENCRYPTION_KEY: encryptionKeySecret.secretValueFromJson('key'),
       }
     });
 
@@ -92,6 +105,7 @@ export class N8nStack extends cdk.Stack {
     // Grant database access
     props.databaseStack.secret.grantRead(this.service.taskDefinition.taskRole);
     n8nSecret.grantRead(this.service.taskDefinition.taskRole);
+    encryptionKeySecret.grantRead(this.service.taskDefinition.taskRole);
 
     // Add outputs
     new cdk.CfnOutput(this, 'N8nServiceUrl', {
