@@ -3,6 +3,7 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { NetworkStack } from "./network-stack";
 import { DatabaseStack } from "./db-stack";
 
@@ -72,7 +73,11 @@ export class N8nStack extends cdk.Stack {
           N8N_HOST: "localhost",
           N8N_PORT: "5678",
           N8N_PROTOCOL: "http",
-          WEBHOOK_URL: "http://localhost:5678",
+          WEBHOOK_URL: "https://d1mhhffq8s3g6d.cloudfront.net",
+          // Add settings file permissions enforcement
+          N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true",
+          // Add SSL mode for PostgreSQL
+          DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED: "false",
         },
         secrets: {
           DB_POSTGRESDB_DATABASE: ecs.Secret.fromSecretsManager(n8nSecret, 'DB_POSTGRESDB_DATABASE'),
