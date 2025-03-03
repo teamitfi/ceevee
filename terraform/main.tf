@@ -1,61 +1,46 @@
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.0"
+    }
+  }
+  backend "gcs" {
+    bucket      = "ceevee-terraform-state"
+    prefix      = "terraform/state/dev"
+  }
+}
+
 provider "google" {
-  project = var.project_id
-  region  = var.region
+  project     = var.project_id
+  region      = var.region
 }
 
-resource "google_storage_bucket" "bucket" {
-  name     = var.bucket_name
-  location = var.region
+variable "environment" {
+  description = "The environment for the infrastructure (e.g., dev, staging, prod)"
+  type        = string
 }
 
-resource "google_compute_network" "vpc_network" {
-  name                    = "my-vpc"
-  auto_create_subnetworks = false
+module "network" {
+  source = "./stacks/network"
+
+  project_id  = var.project_id
+  region      = var.region
+  environment = var.environment
 }
 
-resource "google_compute_subnetwork" "subnet_1" {
-  name          = "subnet-1"
-  ip_cidr_range = "10.0.1.0/24"
-  region        = "europe-north1"
-  network       = google_compute_network.vpc_network.id
+module "database" {
+  source = "./stacks/database"
+
+  project_id        = var.project_id
+  region            = var.region
+  environment       = var.environment
+  vpc_id            = module.network.vpc_id
+  database_password = var.database_password
 }
 
-resource "google_compute_subnetwork" "subnet_2" {
-  name          = "subnet-2"
-  ip_cidr_range = "10.0.2.0/24"
-  region        = "europe-north1"
-  network       = google_compute_network.vpc_network.id
-}
-
-resource "google_compute_firewall" "allow-internal" {
-  name    = "allow-internal"
-  network = google_compute_network.vpc_network.name
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-    ports    = ["0-65535"]
-  }
-
-  allow {
-    protocol = "udp"
-    ports    = ["0-65535"]
-  }
-
-  source_ranges = ["10.0.0.0/8"]
-}
-
-resource "google_compute_firewall" "allow-ssh" {
-  name    = "allow-ssh"
-  network = google_compute_network.vpc_network.name
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-}
+# Additional modules will be added here (similar to CDK stacks):
+# - Cloud Run (similar to ECS)
+# - Cloud SQL (similar to RDS)
+# - IAM (similar to Cognito)
+# - Storage (similar to S3)

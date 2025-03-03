@@ -13,3 +13,9 @@ variable "bucket_name" {
   description = "The name of the storage bucket"
   type        = string
 }
+
+variable "database_password" {
+  description = "Password for database user"
+  type        = string
+  sensitive   = true
+}

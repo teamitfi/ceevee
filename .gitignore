@@ -8,4 +8,13 @@ dist/
 # IntelliJ
 .idea/dataSources.xml
 
+# Terraform
 .terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+.terraformrc
+terraform.rc
+credentials.json
+service-account-key.json
