@@ -43,6 +43,17 @@ module "database" {
   kms_key_name = var.kms_key_name
 }
 
+module "n8n" {
+  source = "./stacks/n8n"
+
+  project_id  = var.project_id
+  region      = var.region
+  environment = var.environment
+  
+  database_host                = module.database.database_connection.host
+  database_credentials_secret_id = module.database.database_credentials_secret_id
+}
+
 # Additional modules will be added here (similar to CDK stacks):
 # - Cloud Run (similar to ECS)
 # - Cloud SQL (similar to RDS)

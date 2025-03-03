@@ -12,3 +12,8 @@ output "database_connection" {
   }
   sensitive = true
 }
+
+output "database_credentials_secret_id" {
+  description = "Secret ID for database credentials"
+  value       = google_secret_manager_secret.db_credentials.id
+}
