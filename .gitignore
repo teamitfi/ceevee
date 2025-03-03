@@ -3,5 +3,9 @@ dist/
 .env
 .env.docker
 
+.DS_Store
+
 # IntelliJ
 .idea/dataSources.xml
+
+.terraform/
