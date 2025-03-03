@@ -25,8 +25,8 @@ resource "random_password" "n8n_encryption_key" {
 }
 
 resource "google_secret_manager_secret_version" "n8n_encryption_key" {
-  secret      = google_secret_manager_secret.n8n_encryption_key.id
-  secret_data = random_password.n8n_encryption_key.result
+  secret         = google_secret_manager_secret.n8n_encryption_key.id
+  secret_data    = random_password.n8n_encryption_key.result
 }
 
 # IAM: Allow Cloud Run service to access secrets
@@ -36,8 +36,14 @@ resource "google_secret_manager_secret_iam_member" "n8n_encryption_key_access" {
   member    = "serviceAccount:${google_service_account.n8n.email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "database_credentials_access" {
-  secret_id = var.database_credentials_secret_id
+resource "google_secret_manager_secret_iam_member" "database_username_access" {
+  secret_id = "ceevee_database_username_${var.environment}"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.n8n.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "database_password_access" {
+  secret_id = "ceevee_database_password_${var.environment}"
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.n8n.email}"
 }
@@ -55,13 +61,42 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
 resource "google_cloud_run_v2_service" "n8n" {
   name     = "ceevee-n8n-${var.environment}"
   location = var.region
+  deletion_protection = false
 
   template {
+    vpc_access {
+      connector = "projects/${var.project_id}/locations/${var.region}/connectors/${var.vpc_connector_name}"
+      egress = "ALL_TRAFFIC"
+    }
+    
     service_account = google_service_account.n8n.email
     
     containers {
       image = "n8nio/n8n:latest"
 
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "2Gi"
+        }
+      }
+
+      # Port configuration for Cloud Run
+      ports {
+        container_port = 8080
+      }
+      env {
+        name  = "N8N_HOST"
+        value = "0.0.0.0"
+      }
+      env {
+        name  = "N8N_PORT"
+        value = "8080"
+      }
+      env {
+        name  = "N8N_PROTOCOL"
+        value = "https"
+      }
       env {
         name  = "DB_TYPE"
         value = "postgresdb"
@@ -83,19 +118,11 @@ resource "google_cloud_run_v2_service" "n8n" {
         value = "production"
       }
       env {
-        name  = "N8N_HOST"
-        value = "0.0.0.0"
-      }
-      env {
-        name  = "N8N_PORT"
-        value = "8080"
-      }
-      env {
-        name  = "N8N_PROTOCOL"
-        value = "https"
-      }
-      env {
         name  = "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS"
+        value = "true"
+      }
+      env {
+        name  = "N8N_RUNNERS_ENABLED"
         value = "true"
       }
       env {
@@ -103,16 +130,10 @@ resource "google_cloud_run_v2_service" "n8n" {
         value = "false"
       }
       env {
-        name  = "WEBHOOK_URL"
-        value = "http://localhost"
-      }
-
-      # Secrets from Secret Manager
-      env {
         name = "DB_POSTGRESDB_USER"
         value_source {
           secret_key_ref {
-            secret  = var.database_credentials_secret_id
+            secret = "ceevee_database_username_${var.environment}"
             version = "latest"
           }
         }
@@ -121,7 +142,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_POSTGRESDB_PASSWORD"
         value_source {
           secret_key_ref {
-            secret  = var.database_credentials_secret_id
+            secret = "ceevee_database_password_${var.environment}"
             version = "latest"
           }
         }
@@ -136,8 +157,16 @@ resource "google_cloud_run_v2_service" "n8n" {
         }
       }
 
-      ports {
-        container_port = 8080
+      # Set startup probe (similar to AWS health check)
+      startup_probe {
+        http_get {
+          path = "/healthz"
+          port = 8080
+        }
+        initial_delay_seconds = 120
+        timeout_seconds = 10
+        period_seconds = 30
+        failure_threshold = 3
       }
     }
 

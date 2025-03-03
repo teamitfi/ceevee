@@ -18,7 +18,7 @@ variable "database_host" {
   type        = string
 }
 
-variable "database_credentials_secret_id" {
-  description = "Secret ID for database credentials"
+variable "vpc_connector_name" {
+  description = "The name of the VPC Serverless Connector"
   type        = string
 }

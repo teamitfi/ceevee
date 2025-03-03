@@ -18,12 +18,20 @@ resource "google_sql_database_instance" "instance" {
   region           = var.region
 
   depends_on = [google_service_networking_connection.private_vpc_connection]
+  deletion_protection = var.environment == "prod" ? true : false
 
   settings {
-    tier = "db-f1-micro" # 1 vCPU, 0.6 GB memory.  We will override memory below.
+    tier = "db-f1-micro"
     disk_autoresize = true
-    disk_size       = 10 # GB
+    disk_size       = 10
     edition         = "ENTERPRISE"
+    
+    database_flags {
+      name  = "max_connections"
+      value = "100"
+    }
+
+    availability_type = "ZONAL"
     
     ip_configuration {
       ipv4_enabled                                  = false
@@ -36,19 +44,26 @@ resource "google_sql_database_instance" "instance" {
       location   = var.region
       start_time = "02:00"
     }
-  }
-
-  deletion_protection = var.environment == "prod" ? true : false
+  }  
 }
 
 resource "google_sql_database" "database" {
   name     = "ceevee"
   instance = google_sql_database_instance.instance.name
+
+  depends_on = [google_sql_database_instance.instance]
 }
 
-# Create the secret in Secret Manager
-resource "google_secret_manager_secret" "db_credentials" {
-  secret_id = "ceevee_database_credentials_${var.environment}"
+# Generate a secure random password
+resource "random_password" "db_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+# Create separate secrets for username and password
+resource "google_secret_manager_secret" "db_username" {
+  secret_id = "ceevee_database_username_${var.environment}"
   
   replication {
     auto {}
@@ -59,25 +74,39 @@ resource "google_secret_manager_secret" "db_credentials" {
   }
 }
 
-# Store the credentials as JSON in the secret
-resource "google_secret_manager_secret_version" "db_credentials" {
-  secret      = google_secret_manager_secret.db_credentials.id
-  secret_data = jsonencode({
-    username = "postgres"
-    password = random_password.db_password.result
-  })
+resource "google_secret_manager_secret" "db_password" {
+  secret_id = "ceevee_database_password_${var.environment}"
+  
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+  }
 }
 
-# Generate a secure random password
-resource "random_password" "db_password" {
-  length           = 32
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+# Store username and password separately
+resource "google_secret_manager_secret_version" "db_username" {
+  secret      = google_secret_manager_secret.db_username.id
+  secret_data = "postgres"
+}
+
+resource "google_secret_manager_secret_version" "db_password" {
+  secret      = google_secret_manager_secret.db_password.id
+  secret_data = random_password.db_password.result
 }
 
 # Updated to use generated password
 resource "google_sql_user" "users" {
-  name     = "ceevee_app"
-  instance = google_sql_database_instance.instance.name
-  password = random_password.db_password.result
+  name            = "postgres"
+  instance        = google_sql_database_instance.instance.name
+  password        = random_password.db_password.result
+  type            = "BUILT_IN"  # Explicitly set as built-in user
+  deletion_policy = "ABANDON"   # Don't try to delete the postgres user
+
+  depends_on = [
+    google_sql_database_instance.instance,
+    google_sql_database.database
+  ]
 }

@@ -36,11 +36,10 @@ module "network" {
 module "database" {
   source = "./stacks/database"
 
-  project_id   = var.project_id
-  region       = var.region
-  environment  = var.environment
-  vpc_id       = module.network.vpc_id
-  kms_key_name = var.kms_key_name
+  project_id  = var.project_id
+  region      = var.region
+  environment = var.environment
+  vpc_id      = module.network.vpc_id
 }
 
 module "n8n" {
@@ -49,9 +48,9 @@ module "n8n" {
   project_id  = var.project_id
   region      = var.region
   environment = var.environment
-  
-  database_host                = module.database.database_connection.host
-  database_credentials_secret_id = module.database.database_credentials_secret_id
+
+  database_host      = module.database.database_connection.host
+  vpc_connector_name = module.network.vpc_connector_name
 }
 
 # Additional modules will be added here (similar to CDK stacks):
