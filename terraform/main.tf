@@ -4,16 +4,20 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 6.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
   backend "gcs" {
-    bucket      = "ceevee-terraform-state"
-    prefix      = "terraform/state/dev"
+    bucket = "ceevee-terraform-state"
+    prefix = "terraform/state/dev"
   }
 }
 
 provider "google" {
-  project     = var.project_id
-  region      = var.region
+  project = var.project_id
+  region  = var.region
 }
 
 variable "environment" {
@@ -32,11 +36,11 @@ module "network" {
 module "database" {
   source = "./stacks/database"
 
-  project_id        = var.project_id
-  region            = var.region
-  environment       = var.environment
-  vpc_id            = module.network.vpc_id
-  database_password = var.database_password
+  project_id   = var.project_id
+  region       = var.region
+  environment  = var.environment
+  vpc_id       = module.network.vpc_id
+  kms_key_name = var.kms_key_name
 }
 
 # Additional modules will be added here (similar to CDK stacks):

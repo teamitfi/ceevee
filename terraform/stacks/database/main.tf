@@ -20,7 +20,10 @@ resource "google_sql_database_instance" "instance" {
   depends_on = [google_service_networking_connection.private_vpc_connection]
 
   settings {
-    tier = var.environment == "prod" ? "db-custom-2-4096" : "db-f1-micro"
+    tier = "db-f1-micro" # 1 vCPU, 0.6 GB memory.  We will override memory below.
+    disk_autoresize = true
+    disk_size       = 10 # GB
+    edition         = "ENTERPRISE"
     
     ip_configuration {
       ipv4_enabled                                  = false
@@ -43,8 +46,38 @@ resource "google_sql_database" "database" {
   instance = google_sql_database_instance.instance.name
 }
 
+# Create the secret in Secret Manager
+resource "google_secret_manager_secret" "db_credentials" {
+  secret_id = "ceevee_database_credentials_${var.environment}"
+  
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+  }
+}
+
+# Store the credentials as JSON in the secret
+resource "google_secret_manager_secret_version" "db_credentials" {
+  secret      = google_secret_manager_secret.db_credentials.id
+  secret_data = jsonencode({
+    username = "postgres"
+    password = random_password.db_password.result
+  })
+}
+
+# Generate a secure random password
+resource "random_password" "db_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+# Updated to use generated password
 resource "google_sql_user" "users" {
   name     = "ceevee_app"
   instance = google_sql_database_instance.instance.name
-  password = var.database_password
+  password = random_password.db_password.result
 }

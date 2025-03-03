@@ -14,8 +14,8 @@ variable "bucket_name" {
   type        = string
 }
 
-variable "database_password" {
-  description = "Password for database user"
+variable "kms_key_name" {
+  description = "The name of the KMS key used for encrypting secrets"
   type        = string
-  sensitive   = true
+  default     = null # If null, Google-managed encryption will be used
 }

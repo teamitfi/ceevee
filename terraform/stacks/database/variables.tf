@@ -18,8 +18,8 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "database_password" {
-  description = "Database user password"
+variable "kms_key_name" {
+  description = "The name of the KMS key used for encrypting secrets"
   type        = string
-  sensitive   = true
+  default     = null
 }
