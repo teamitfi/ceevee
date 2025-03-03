@@ -1,0 +1,512 @@
+{
+  "version": 4,
+  "terraform_version": "1.11.0",
+  "serial": 40,
+  "lineage": "33a8c25f-3ce3-2dca-3fa6-d58519ecd966",
+  "outputs": {},
+  "resources": [
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "google_compute_global_address",
+      "name": "private_ip_address",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "address": "10.23.0.0",
+            "address_type": "INTERNAL",
+            "creation_timestamp": "2025-03-06T03:08:15.331-08:00",
+            "description": "",
+            "effective_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "id": "projects/ai-tools-452306/global/addresses/ceevee-db-ip",
+            "ip_version": "",
+            "label_fingerprint": "vezUS-42LLM=",
+            "labels": {},
+            "name": "ceevee-db-ip",
+            "network": "https://www.googleapis.com/compute/v1/projects/ai-tools-452306/global/networks/ceevee-vpc-dev",
+            "prefix_length": 16,
+            "project": "ai-tools-452306",
+            "purpose": "VPC_PEERING",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/ai-tools-452306/global/addresses/ceevee-db-ip",
+            "terraform_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.google_compute_network.vpc",
+            "module.network.google_compute_subnetwork.private",
+            "module.network.google_compute_subnetwork.public",
+            "module.network.google_vpc_access_connector.connector"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "google_service_networking_connection",
+      "name": "private_vpc_connection",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "deletion_policy": null,
+            "id": "projects%2Fai-tools-452306%2Fglobal%2Fnetworks%2Fceevee-vpc-dev:servicenetworking.googleapis.com",
+            "network": "projects/ai-tools-452306/global/networks/ceevee-vpc-dev",
+            "peering": "servicenetworking-googleapis-com",
+            "reserved_peering_ranges": [
+              "ceevee-db-ip"
+            ],
+            "service": "servicenetworking.googleapis.com",
+            "timeouts": null,
+            "update_on_creation_fail": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.database.google_compute_global_address.private_ip_address",
+            "module.network.google_compute_network.vpc",
+            "module.network.google_compute_subnetwork.private",
+            "module.network.google_compute_subnetwork.public",
+            "module.network.google_vpc_access_connector.connector"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "google_sql_database",
+      "name": "database",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "charset": "UTF8",
+            "collation": "en_US.UTF8",
+            "deletion_policy": "DELETE",
+            "id": "projects/ai-tools-452306/instances/ceevee-db-dev/databases/ceevee",
+            "instance": "ceevee-db-dev",
+            "name": "ceevee",
+            "project": "ai-tools-452306",
+            "self_link": "https://sqladmin.googleapis.com/sql/v1beta4/projects/ai-tools-452306/instances/ceevee-db-dev/databases/ceevee",
+            "timeouts": {
+              "create": "20m",
+              "delete": null,
+              "update": null
+            }
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.database.google_compute_global_address.private_ip_address",
+            "module.database.google_service_networking_connection.private_vpc_connection",
+            "module.database.google_sql_database_instance.instance",
+            "module.network.google_compute_network.vpc",
+            "module.network.google_compute_subnetwork.private",
+            "module.network.google_compute_subnetwork.public",
+            "module.network.google_vpc_access_connector.connector"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "google_sql_database",
+      "name": "n8n",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "charset": "UTF8",
+            "collation": "en_US.UTF8",
+            "deletion_policy": "DELETE",
+            "id": "projects/ai-tools-452306/instances/ceevee-db-dev/databases/n8n",
+            "instance": "ceevee-db-dev",
+            "name": "n8n",
+            "project": "ai-tools-452306",
+            "self_link": "https://sqladmin.googleapis.com/sql/v1beta4/projects/ai-tools-452306/instances/ceevee-db-dev/databases/n8n",
+            "timeouts": {
+              "create": "20m",
+              "delete": null,
+              "update": null
+            }
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.database.google_compute_global_address.private_ip_address",
+            "module.database.google_service_networking_connection.private_vpc_connection",
+            "module.database.google_sql_database_instance.instance",
+            "module.network.google_compute_network.vpc",
+            "module.network.google_compute_subnetwork.private",
+            "module.network.google_compute_subnetwork.public",
+            "module.network.google_vpc_access_connector.connector"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "google_sql_database_instance",
+      "name": "instance",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "status": "tainted",
+          "schema_version": 0,
+          "attributes": {
+            "available_maintenance_versions": [],
+            "clone": [],
+            "connection_name": "ai-tools-452306:europe-north1:ceevee-db-dev",
+            "database_version": "POSTGRES_17",
+            "deletion_protection": false,
+            "dns_name": "",
+            "encryption_key_name": null,
+            "first_ip_address": "10.23.0.3",
+            "id": "ceevee-db-dev",
+            "instance_type": "CLOUD_SQL_INSTANCE",
+            "ip_address": [
+              {
+                "ip_address": "10.23.0.3",
+                "time_to_retire": "",
+                "type": "PRIVATE"
+              }
+            ],
+            "maintenance_version": "POSTGRES_17_4.R20250112.01_14",
+            "master_instance_name": "",
+            "name": "ceevee-db-dev",
+            "private_ip_address": "10.23.0.3",
+            "project": "ai-tools-452306",
+            "psc_service_attachment_link": "",
+            "public_ip_address": "",
+            "region": "europe-north1",
+            "replica_configuration": [],
+            "replica_names": [],
+            "replication_cluster": [
+              {
+                "dr_replica": false,
+                "failover_dr_replica_name": ""
+              }
+            ],
+            "restore_backup_context": [],
+            "root_password": null,
+            "self_link": "https://sqladmin.googleapis.com/sql/v1beta4/projects/ai-tools-452306/instances/ceevee-db-dev",
+            "server_ca_cert": [
+              {
+                "cert": "-----BEGIN CERTIFICATE-----\nMIIDfzCCAmegAwIBAgIBADANBgkqhkiG9w0BAQsFADB3MS0wKwYDVQQuEyRiMjE4\nMTYyYi1kMjA4LTQyYjgtYTY5YS0zNmE2ZDk4NmIxYTQxIzAhBgNVBAMTGkdvb2ds\nZSBDbG91ZCBTUUwgU2VydmVyIENBMRQwEgYDVQQKEwtHb29nbGUsIEluYzELMAkG\nA1UEBhMCVVMwHhcNMjUwMzA2MTExMjQ3WhcNMzUwMzA0MTExMzQ3WjB3MS0wKwYD\nVQQuEyRiMjE4MTYyYi1kMjA4LTQyYjgtYTY5YS0zNmE2ZDk4NmIxYTQxIzAhBgNV\nBAMTGkdvb2dsZSBDbG91ZCBTUUwgU2VydmVyIENBMRQwEgYDVQQKEwtHb29nbGUs\nIEluYzELMAkGA1UEBhMCVVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB\nAQCxg7/sOgS815EH56IXWZND2l+fiBqArgQUm4sAgsVwrBs5X568z0DD1t2hpckz\nyHnl0+Ua32B+wMleaQfWNvA+MLtlMVcxzt6dhY5ijeOuPKokKYjMaqVq6Y8sT5zJ\nnPiOCqqui4YGBmpM/Il9uCqKa3hQDGuDdW1yg/Ma11F8tTaPH6rQXu7G9dBR3Web\nGHNbv+Fs6JRmnxmiAThabhsiljpzux/wo+8ymhmIcJGrgmhKhaFw6bmqlzB4/jwp\nSAoIsWbHPMd1Xm5vejf3HA0e/yUfXkxzR0BNKhyXYm1u/z+RjdjDoMCujO6s0sC6\nWIPRQ8lJaA0vw10A0NbOvCSHAgMBAAGjFjAUMBIGA1UdEwEB/wQIMAYBAf8CAQAw\nDQYJKoZIhvcNAQELBQADggEBAJFUID/hZF8i16XPIbGtTGVddQI+zKi4lp8QQhu2\nPib2OyDbyNWuIgzgOIBVibqNyC6L+7Hbqhjoo6T5xTvqiRNyYMoy0OD3CWNbnRuE\nVQv5OWvlX93wzazr9hqZyI5qn7fjqKG+Utz3+mehKSdLh88pKXOMwbFT1o8eNxV8\nqiYL5jNL92x4YhhsjOyeQeyS6TADuJE0gUR8VvTi529I4/P92iKQQFLfzUN0sFjM\nZApjVo3jG0EU/o+keFNP+aIXvGmvLeAoA3Cp/4HASGkvzvoBsuyAHBQoDU3SXbcc\nzR+a/h47YOCZfF6GZ5EuEoFRwMbLrprdN7IZzuz5hKFEd1k=\n-----END CERTIFICATE-----",
+                "common_name": "C=US,O=Google\\, Inc,CN=Google Cloud SQL Server CA,dnQualifier=b218162b-d208-42b8-a69a-36a6d986b1a4",
+                "create_time": "2025-03-06T11:12:47.426Z",
+                "expiration_time": "2035-03-04T11:13:47.426Z",
+                "sha1_fingerprint": "7ad3e13b2ec4944069edabe99d794a7bb73a208c"
+              }
+            ],
+            "service_account_email_address": "p927593667653-br3se3@gcp-sa-cloud-sql.iam.gserviceaccount.com",
+            "settings": [
+              {
+                "activation_policy": "ALWAYS",
+                "active_directory_config": [],
+                "advanced_machine_features": [],
+                "availability_type": "ZONAL",
+                "backup_configuration": [
+                  {
+                    "backup_retention_settings": [
+                      {
+                        "retained_backups": 7,
+                        "retention_unit": "COUNT"
+                      }
+                    ],
+                    "binary_log_enabled": false,
+                    "enabled": true,
+                    "location": "europe-north1",
+                    "point_in_time_recovery_enabled": false,
+                    "start_time": "02:00",
+                    "transaction_log_retention_days": 7
+                  }
+                ],
+                "collation": "",
+                "connector_enforcement": "NOT_REQUIRED",
+                "data_cache_config": [
+                  {
+                    "data_cache_enabled": false
+                  }
+                ],
+                "database_flags": [
+                  {
+                    "name": "cloudsql.enable_pgaudit",
+                    "value": "on"
+                  },
+                  {
+                    "name": "log_disconnections",
+                    "value": "on"
+                  },
+                  {
+                    "name": "log_lock_waits",
+                    "value": "on"
+                  },
+                  {
+                    "name": "log_min_duration_statement",
+                    "value": "1000"
+                  },
+                  {
+                    "name": "max_connections",
+                    "value": "100"
+                  },
+                  {
+                    "name": "pgaudit.log",
+                    "value": "all"
+                  }
+                ],
+                "deletion_protection_enabled": false,
+                "deny_maintenance_period": [],
+                "disk_autoresize": true,
+                "disk_autoresize_limit": 0,
+                "disk_size": 10,
+                "disk_type": "PD_SSD",
+                "edition": "ENTERPRISE",
+                "enable_dataplex_integration": false,
+                "enable_google_ml_integration": false,
+                "insights_config": [],
+                "ip_configuration": [
+                  {
+                    "allocated_ip_range": "",
+                    "authorized_networks": [],
+                    "enable_private_path_for_google_cloud_services": true,
+                    "ipv4_enabled": false,
+                    "private_network": "projects/ai-tools-452306/global/networks/ceevee-vpc-dev",
+                    "psc_config": [],
+                    "server_ca_mode": "GOOGLE_MANAGED_INTERNAL_CA",
+                    "server_ca_pool": "",
+                    "ssl_mode": "ENCRYPTED_ONLY"
+                  }
+                ],
+                "location_preference": [
+                  {
+                    "follow_gae_application": "",
+                    "secondary_zone": "",
+                    "zone": "europe-north1-b"
+                  }
+                ],
+                "maintenance_window": [],
+                "password_validation_policy": [],
+                "pricing_plan": "PER_USE",
+                "sql_server_audit_config": [],
+                "tier": "db-f1-micro",
+                "time_zone": "",
+                "user_labels": {},
+                "version": 9
+              }
+            ],
+            "timeouts": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "root_password"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "server_ca_cert"
+              }
+            ]
+          ],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo1NDAwMDAwMDAwMDAwLCJkZWxldGUiOjU0MDAwMDAwMDAwMDAsInVwZGF0ZSI6NTQwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.database.google_compute_global_address.private_ip_address",
+            "module.database.google_service_networking_connection.private_vpc_connection",
+            "module.network.google_compute_network.vpc",
+            "module.network.google_compute_subnetwork.private",
+            "module.network.google_compute_subnetwork.public",
+            "module.network.google_vpc_access_connector.connector"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "google_compute_network",
+      "name": "vpc",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "auto_create_subnetworks": false,
+            "bgp_always_compare_med": false,
+            "bgp_best_path_selection_mode": "LEGACY",
+            "bgp_inter_region_cost": "",
+            "delete_default_routes_on_create": false,
+            "description": "",
+            "enable_ula_internal_ipv6": false,
+            "gateway_ipv4": "",
+            "id": "projects/ai-tools-452306/global/networks/ceevee-vpc-dev",
+            "internal_ipv6_range": "",
+            "mtu": 0,
+            "name": "ceevee-vpc-dev",
+            "network_firewall_policy_enforcement_order": "AFTER_CLASSIC_FIREWALL",
+            "network_id": "6393811898477068178",
+            "network_profile": "",
+            "numeric_id": "6393811898477068178",
+            "project": "ai-tools-452306",
+            "routing_mode": "REGIONAL",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/ai-tools-452306/global/networks/ceevee-vpc-dev",
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "google_compute_subnetwork",
+      "name": "private",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "creation_timestamp": "2025-03-06T03:05:58.867-08:00",
+            "description": "",
+            "external_ipv6_prefix": "",
+            "fingerprint": null,
+            "gateway_address": "10.0.1.1",
+            "id": "projects/ai-tools-452306/regions/europe-north1/subnetworks/ceevee-private-dev",
+            "internal_ipv6_prefix": "",
+            "ip_cidr_range": "10.0.1.0/24",
+            "ipv6_access_type": "",
+            "ipv6_cidr_range": "",
+            "log_config": [],
+            "name": "ceevee-private-dev",
+            "network": "https://www.googleapis.com/compute/v1/projects/ai-tools-452306/global/networks/ceevee-vpc-dev",
+            "private_ip_google_access": true,
+            "private_ipv6_google_access": "DISABLE_GOOGLE_ACCESS",
+            "project": "ai-tools-452306",
+            "purpose": "PRIVATE",
+            "region": "europe-north1",
+            "reserved_internal_range": "",
+            "role": "",
+            "secondary_ip_range": [],
+            "self_link": "https://www.googleapis.com/compute/v1/projects/ai-tools-452306/regions/europe-north1/subnetworks/ceevee-private-dev",
+            "send_secondary_ip_range_if_empty": null,
+            "stack_type": "IPV4_ONLY",
+            "subnetwork_id": 8166395302977486713,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "google_compute_subnetwork",
+      "name": "public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "creation_timestamp": "2025-03-06T03:05:59.002-08:00",
+            "description": "",
+            "external_ipv6_prefix": "",
+            "fingerprint": null,
+            "gateway_address": "10.0.2.1",
+            "id": "projects/ai-tools-452306/regions/europe-north1/subnetworks/ceevee-public-dev",
+            "internal_ipv6_prefix": "",
+            "ip_cidr_range": "10.0.2.0/24",
+            "ipv6_access_type": "",
+            "ipv6_cidr_range": "",
+            "log_config": [],
+            "name": "ceevee-public-dev",
+            "network": "https://www.googleapis.com/compute/v1/projects/ai-tools-452306/global/networks/ceevee-vpc-dev",
+            "private_ip_google_access": false,
+            "private_ipv6_google_access": "DISABLE_GOOGLE_ACCESS",
+            "project": "ai-tools-452306",
+            "purpose": "PRIVATE",
+            "region": "europe-north1",
+            "reserved_internal_range": "",
+            "role": "",
+            "secondary_ip_range": [],
+            "self_link": "https://www.googleapis.com/compute/v1/projects/ai-tools-452306/regions/europe-north1/subnetworks/ceevee-public-dev",
+            "send_secondary_ip_range_if_empty": null,
+            "stack_type": "IPV4_ONLY",
+            "subnetwork_id": 1497191483275755384,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.network.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.network",
+      "mode": "managed",
+      "type": "google_vpc_access_connector",
+      "name": "connector",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "connected_projects": [
+              "ai-tools-452306"
+            ],
+            "id": "projects/ai-tools-452306/locations/europe-north1/connectors/vpc-con-dev",
+            "ip_cidr_range": "10.8.0.0/28",
+            "machine_type": "f1-micro",
+            "max_instances": 3,
+            "max_throughput": 300,
+            "min_instances": 2,
+            "min_throughput": 200,
+            "name": "vpc-con-dev",
+            "network": "ceevee-vpc-dev",
+            "project": "ai-tools-452306",
+            "region": "europe-north1",
+            "self_link": "projects/ai-tools-452306/locations/europe-north1/connectors/vpc-con-dev",
+            "state": "READY",
+            "subnet": [],
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDB9fQ==",
+          "dependencies": [
+            "module.network.google_compute_network.vpc"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
