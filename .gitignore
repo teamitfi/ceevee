@@ -5,4 +5,13 @@ dist/
 
 .DS_Store
 
+# Terraform
 .terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+.terraformrc
+terraform.rc
+credentials.json
+service-account-key.json
