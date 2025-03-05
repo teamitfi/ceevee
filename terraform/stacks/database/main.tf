@@ -25,10 +25,30 @@ resource "google_sql_database_instance" "instance" {
     disk_autoresize = true
     disk_size       = 10
     edition         = "ENTERPRISE"
-    
+
+    database_flags {
+      name  = "log_disconnections"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_min_duration_statement"
+      value = "1000"
+    }
     database_flags {
       name  = "max_connections"
       value = "100"
+    }
+    database_flags {
+      name  = "cloudsql.enable_pgaudit"
+      value = "on"
+    }
+    database_flags {
+      name  = "pgaudit.log"
+      value = "all"
     }
 
     availability_type = "ZONAL"
@@ -37,12 +57,14 @@ resource "google_sql_database_instance" "instance" {
       ipv4_enabled                                  = false
       private_network                               = var.vpc_id
       enable_private_path_for_google_cloud_services = true
+      ssl_mode                                      = "TRUSTED_CLIENT_CERTIFICATE_REQUIRED"
     }
 
     backup_configuration {
       enabled    = true
       location   = var.region
       start_time = "02:00"
+      point_in_time_recovery_enabled = var.environment == "prod" ? true : false
     }
   }  
 }
@@ -109,4 +131,56 @@ resource "google_sql_user" "users" {
     google_sql_database_instance.instance,
     google_sql_database.database
   ]
+}
+
+# Generate SSL certificates for the database
+resource "google_sql_ssl_cert" "client_cert" {
+  common_name = "n8n-client"
+  instance    = google_sql_database_instance.instance.name
+}
+
+# Store SSL certificates in Secret Manager
+resource "google_secret_manager_secret" "db_ssl_cert" {
+  secret_id = "ceevee_database_ssl_cert_${var.environment}"
+  replication {
+    auto {}
+  }
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_secret_manager_secret" "db_ssl_key" {
+  secret_id = "ceevee_database_ssl_key_${var.environment}"
+  replication {
+    auto {}
+  }
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_secret_manager_secret" "db_ssl_ca" {
+  secret_id = "ceevee_database_ssl_ca_${var.environment}"
+  replication {
+    auto {}
+  }
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_secret_manager_secret_version" "db_ssl_cert" {
+  secret      = google_secret_manager_secret.db_ssl_cert.id
+  secret_data = google_sql_ssl_cert.client_cert.cert
+}
+
+resource "google_secret_manager_secret_version" "db_ssl_key" {
+  secret      = google_secret_manager_secret.db_ssl_key.id
+  secret_data = google_sql_ssl_cert.client_cert.private_key
+}
+
+resource "google_secret_manager_secret_version" "db_ssl_ca" {
+  secret      = google_secret_manager_secret.db_ssl_ca.id
+  secret_data = google_sql_ssl_cert.client_cert.server_ca_cert
 }

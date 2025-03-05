@@ -48,6 +48,24 @@ resource "google_secret_manager_secret_iam_member" "database_password_access" {
   member    = "serviceAccount:${google_service_account.n8n.email}"
 }
 
+resource "google_secret_manager_secret_iam_member" "database_ssl_cert_access" {
+  secret_id = "ceevee_database_ssl_cert_${var.environment}"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.n8n.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "database_ssl_key_access" {
+  secret_id = "ceevee_database_ssl_key_${var.environment}"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.n8n.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "database_ssl_ca_access" {
+  secret_id = "ceevee_database_ssl_ca_${var.environment}"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.n8n.email}"
+}
+
 # Make the service publicly accessible
 resource "google_cloud_run_v2_service_iam_member" "public" {
   project  = var.project_id
@@ -143,6 +161,33 @@ resource "google_cloud_run_v2_service" "n8n" {
         value_source {
           secret_key_ref {
             secret = "ceevee_database_password_${var.environment}"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "DB_SSL_CERT"
+        value_source {
+          secret_key_ref {
+            secret = "ceevee_database_ssl_cert_${var.environment}"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "DB_SSL_KEY"
+        value_source {
+          secret_key_ref {
+            secret = "ceevee_database_ssl_key_${var.environment}"
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "DB_SSL_CA"
+        value_source {
+          secret_key_ref {
+            secret = "ceevee_database_ssl_ca_${var.environment}"
             version = "latest"
           }
         }
