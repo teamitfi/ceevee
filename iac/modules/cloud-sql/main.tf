@@ -57,7 +57,7 @@ resource "google_sql_database_instance" "instance" {
       ipv4_enabled                                  = false
       private_network                               = var.vpc_id
       enable_private_path_for_google_cloud_services = true
-      ssl_mode                                      = "TRUSTED_CLIENT_CERTIFICATE_REQUIRED"
+      ssl_mode                                      = "ENCRYPTED_ONLY"
     }
 
     backup_configuration {
@@ -139,58 +139,6 @@ resource "google_sql_user" "users" {
     google_sql_database_instance.instance,
     google_sql_database.database
   ]
-}
-
-# Generate SSL certificates for the database
-resource "google_sql_ssl_cert" "client_cert" {
-  common_name = "n8n-client"
-  instance    = google_sql_database_instance.instance.name
-}
-
-# Store SSL certificates in Secret Manager
-resource "google_secret_manager_secret" "db_ssl_cert" {
-  secret_id = "ceevee_database_ssl_cert_${var.environment}"
-  replication {
-    auto {}
-  }
-  labels = {
-    environment = var.environment
-  }
-}
-
-resource "google_secret_manager_secret" "db_ssl_key" {
-  secret_id = "ceevee_database_ssl_key_${var.environment}"
-  replication {
-    auto {}
-  }
-  labels = {
-    environment = var.environment
-  }
-}
-
-resource "google_secret_manager_secret" "db_ssl_ca" {
-  secret_id = "ceevee_database_ssl_ca_${var.environment}"
-  replication {
-    auto {}
-  }
-  labels = {
-    environment = var.environment
-  }
-}
-
-resource "google_secret_manager_secret_version" "db_ssl_cert" {
-  secret         = google_secret_manager_secret.db_ssl_cert.id
-  secret_data_wo = google_sql_ssl_cert.client_cert.cert
-}
-
-resource "google_secret_manager_secret_version" "db_ssl_key" {
-  secret         = google_secret_manager_secret.db_ssl_key.id
-  secret_data_wo = google_sql_ssl_cert.client_cert.private_key
-}
-
-resource "google_secret_manager_secret_version" "db_ssl_ca" {
-  secret         = google_secret_manager_secret.db_ssl_ca.id
-  secret_data_wo = google_sql_ssl_cert.client_cert.server_ca_cert
 }
 
 # Construct database URL

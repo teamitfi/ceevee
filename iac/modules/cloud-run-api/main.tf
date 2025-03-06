@@ -1,6 +1,7 @@
-# data "google_secret_manager_secret_version" "database_url" {
-#   secret = var.database_url_secret
-# }
+# Validate container image exists
+data "google_container_registry_image" "api" {
+  name = var.api_image
+}
 
 # Configure Cloud Run service
 resource "google_cloud_run_v2_service" "api" {
@@ -17,7 +18,7 @@ resource "google_cloud_run_v2_service" "api" {
     }
 
     containers {
-      image = var.api_image
+      image = data.google_container_registry_image.api.image_url
 
       command = ["/bin/sh", "-c"]
       args    = ["yarn prisma migrate deploy && exec node dist/server.js"]

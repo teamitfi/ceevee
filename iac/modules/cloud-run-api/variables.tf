@@ -48,13 +48,13 @@ variable "max_scale" {
 variable "memory_limit" {
   description = "Memory limit for Cloud Run service"
   type        = string
-  default     = "4Gi" # 4 GB
+  default     = "2Gi" # 4 GB
 }
 
 variable "cpu_limit" {
   description = "CPU limit for Cloud Run service"
   type        = string
-  default     = "2000m" # 2 vCPU
+  default     = "1000m" # 2 vCPU
 }
 
 variable "database_url_secret" {

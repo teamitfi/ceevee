@@ -59,3 +59,9 @@ variable "repository_description" {
   type        = string
   default     = "Container registry for Ceevee applications"
 }
+
+variable "registry_writers" {
+  description = "List of user emails that should have write access to the registry"
+  type        = list(string)
+  default     = []
+}

@@ -27,10 +27,11 @@ module "network" {
 module "registry" {
   source = "./modules/artifact-registry"
 
-  project_id    = var.project_id
-  region        = var.region
-  environment   = var.environment
-  repository_id = var.repository_id
+  project_id       = var.project_id
+  region           = var.region
+  environment      = var.environment
+  repository_id    = var.repository_id
+  registry_writers = var.registry_writers
 }
 
 module "database" {
