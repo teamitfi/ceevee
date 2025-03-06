@@ -3,15 +3,15 @@ variable "project_id" {
   type        = string
 }
 
+variable "environment" {
+  description = "The environment for the infrastructure (e.g., dev, staging, prod)"
+  type        = string
+}
+
 variable "region" {
   description = "The region to deploy resources"
   type        = string
   default     = "us-central1"
-}
-
-variable "bucket_name" {
-  description = "The name of the storage bucket"
-  type        = string
 }
 
 variable "api_domain_name" {
@@ -46,4 +46,16 @@ variable "cpu_limit" {
   description = "CPU limit per API instance"
   type        = string
   default     = "2000m"
+}
+
+variable "repository_id" {
+  description = "The ID of the Artifact Registry repository"
+  type        = string
+  default     = "ceevee"
+}
+
+variable "repository_description" {
+  description = "Description of the Artifact Registry repository"
+  type        = string
+  default     = "Container registry for Ceevee applications"
 }

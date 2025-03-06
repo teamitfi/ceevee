@@ -1,22 +1,26 @@
+# data "google_secret_manager_secret_version" "database_url" {
+#   secret = var.database_url_secret
+# }
+
 # Configure Cloud Run service
 resource "google_cloud_run_v2_service" "api" {
-  name     = "ceevee-api-${var.environment}"
-  location = var.region
+  name                = "ceevee-api-${var.environment}"
+  location            = var.region
   deletion_protection = false
 
   template {
     service_account = google_service_account.api.email
-    
+
     vpc_access {
       connector = "projects/${var.project_id}/locations/${var.region}/connectors/${var.vpc_connector_name}"
-      egress = "ALL_TRAFFIC"
+      egress    = "ALL_TRAFFIC"
     }
 
     containers {
       image = var.api_image
 
       command = ["/bin/sh", "-c"]
-      args = ["yarn prisma migrate deploy && exec node dist/server.js"]
+      args    = ["yarn prisma migrate deploy && exec node dist/server.js"]
 
       resources {
         limits = {
@@ -36,7 +40,12 @@ resource "google_cloud_run_v2_service" "api" {
 
       env {
         name = "DATABASE_URL"
-        value = "${var.database_url}"
+        value_source {
+          secret_key_ref {
+            secret  = var.database_url_secret
+            version = "latest"
+          }
+        }
       }
 
       startup_probe {
@@ -44,10 +53,10 @@ resource "google_cloud_run_v2_service" "api" {
           path = "/health"
           port = 4000
         }
-        initial_delay_seconds = 30  # Increased to allow for slower startups
-        timeout_seconds = 5
-        period_seconds = 10
-        failure_threshold = 3
+        initial_delay_seconds = 30 # Increased to allow for slower startups
+        timeout_seconds       = 5
+        period_seconds        = 10
+        failure_threshold     = 3
       }
 
       liveness_probe {
@@ -56,9 +65,9 @@ resource "google_cloud_run_v2_service" "api" {
           port = 4000
         }
         initial_delay_seconds = 40
-        period_seconds = 15
-        timeout_seconds = 5
-        failure_threshold = 3
+        period_seconds        = 15
+        timeout_seconds       = 5
+        failure_threshold     = 3
       }
     }
 
@@ -67,20 +76,6 @@ resource "google_cloud_run_v2_service" "api" {
       max_instance_count = var.max_scale
     }
   }
-}
-
-# Create database connection secret
-resource "google_secret_manager_secret" "database_url" {
-  secret_id = "ceevee-database-url"
-
-  replication {
-    auto {}
-  }
-}
-
-resource "google_secret_manager_secret_version" "database_url" {
-  secret      = google_secret_manager_secret.database_url.id
-  secret_data = var.database_url
 }
 
 # Make the service publicly accessible
@@ -94,18 +89,18 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
 
 # Load balancer with SSL
 resource "google_compute_global_address" "api" {
-  name = "ceevee-api-address"
+  name = "ceevee-api-address-${var.environment}"
 }
 
 resource "google_compute_global_forwarding_rule" "api" {
-  name       = "ceevee-api-forwarding-rule"
+  name       = "ceevee-api-forwarding-rule-${var.environment}"
   target     = google_compute_target_https_proxy.api.id
   port_range = "443"
   ip_address = google_compute_global_address.api.address
 }
 
 resource "google_compute_managed_ssl_certificate" "api" {
-  name = "ceevee-api-cert"
+  name = "ceevee-api-cert-${var.environment}"
 
   managed {
     domains = [var.domain_name]
@@ -113,18 +108,18 @@ resource "google_compute_managed_ssl_certificate" "api" {
 }
 
 resource "google_compute_target_https_proxy" "api" {
-  name             = "ceevee-api-https-proxy"
+  name             = "ceevee-api-https-proxy-${var.environment}"
   url_map          = google_compute_url_map.api.id
   ssl_certificates = [google_compute_managed_ssl_certificate.api.id]
 }
 
 resource "google_compute_url_map" "api" {
-  name            = "ceevee-api-url-map"
+  name            = "ceevee-api-url-map-${var.environment}"
   default_service = google_compute_backend_service.api.id
 }
 
 resource "google_compute_backend_service" "api" {
-  name        = "ceevee-api-backend"
+  name        = "ceevee-api-backend-${var.environment}"
   protocol    = "HTTP"
   timeout_sec = 30
 
@@ -137,7 +132,7 @@ resource "google_compute_backend_service" "api" {
 
 # Health check configuration
 resource "google_compute_health_check" "api" {
-  name               = "ceevee-api-health-check"
+  name               = "ceevee-api-health-check-${var.environment}"
   timeout_sec        = 5
   check_interval_sec = 30
 
@@ -149,9 +144,9 @@ resource "google_compute_health_check" "api" {
 
 # Network Endpoint Group for Cloud Run
 resource "google_compute_region_network_endpoint_group" "api" {
-  name                  = "ceevee-api-neg"
+  name                  = "ceevee-api-neg-${var.environment}"
   network_endpoint_type = "SERVERLESS"
-  region               = var.region
+  region                = var.region
   cloud_run {
     service = google_cloud_run_v2_service.api.name
   }
@@ -159,7 +154,7 @@ resource "google_compute_region_network_endpoint_group" "api" {
 
 # Service account for Cloud Run
 resource "google_service_account" "api" {
-  account_id   = "ceevee-api-sa"
+  account_id   = "ceevee-api-sa-${var.environment}"
   display_name = "Ceevee API Service Account"
 }
 

@@ -8,7 +8,7 @@ resource "google_service_account" "n8n" {
 # Create encryption key secret
 resource "google_secret_manager_secret" "n8n_encryption_key" {
   secret_id = "ceevee_n8n_encryption_key_${var.environment}"
-  
+
   replication {
     auto {}
   }
@@ -26,7 +26,7 @@ resource "random_password" "n8n_encryption_key" {
 
 resource "google_secret_manager_secret_version" "n8n_encryption_key" {
   secret         = google_secret_manager_secret.n8n_encryption_key.id
-  secret_data    = random_password.n8n_encryption_key.result
+  secret_data_wo = random_password.n8n_encryption_key.result
 }
 
 # IAM: Allow Cloud Run service to access secrets
@@ -77,18 +77,18 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
 
 # Create Cloud Run service
 resource "google_cloud_run_v2_service" "n8n" {
-  name     = "ceevee-n8n-${var.environment}"
-  location = var.region
+  name                = "ceevee-n8n-${var.environment}"
+  location            = var.region
   deletion_protection = false
 
   template {
     vpc_access {
       connector = "projects/${var.project_id}/locations/${var.region}/connectors/${var.vpc_connector_name}"
-      egress = "ALL_TRAFFIC"
+      egress    = "ALL_TRAFFIC"
     }
-    
+
     service_account = google_service_account.n8n.email
-    
+
     containers {
       image = "n8nio/n8n:latest"
 
@@ -151,7 +151,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_POSTGRESDB_USER"
         value_source {
           secret_key_ref {
-            secret = "ceevee_database_username_${var.environment}"
+            secret  = "ceevee_database_username_${var.environment}"
             version = "latest"
           }
         }
@@ -160,7 +160,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_POSTGRESDB_PASSWORD"
         value_source {
           secret_key_ref {
-            secret = "ceevee_database_password_${var.environment}"
+            secret  = "ceevee_database_password_${var.environment}"
             version = "latest"
           }
         }
@@ -169,7 +169,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_SSL_CERT"
         value_source {
           secret_key_ref {
-            secret = "ceevee_database_ssl_cert_${var.environment}"
+            secret  = "ceevee_database_ssl_cert_${var.environment}"
             version = "latest"
           }
         }
@@ -178,7 +178,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_SSL_KEY"
         value_source {
           secret_key_ref {
-            secret = "ceevee_database_ssl_key_${var.environment}"
+            secret  = "ceevee_database_ssl_key_${var.environment}"
             version = "latest"
           }
         }
@@ -187,7 +187,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_SSL_CA"
         value_source {
           secret_key_ref {
-            secret = "ceevee_database_ssl_ca_${var.environment}"
+            secret  = "ceevee_database_ssl_ca_${var.environment}"
             version = "latest"
           }
         }
@@ -202,16 +202,15 @@ resource "google_cloud_run_v2_service" "n8n" {
         }
       }
 
-      # Set startup probe (similar to AWS health check)
       startup_probe {
         http_get {
           path = "/healthz"
           port = 8080
         }
-        initial_delay_seconds = 120
-        timeout_seconds = 10
-        period_seconds = 30
-        failure_threshold = 3
+        initial_delay_seconds = 180
+        timeout_seconds       = 10
+        period_seconds        = 30
+        failure_threshold     = 5
       }
     }
 

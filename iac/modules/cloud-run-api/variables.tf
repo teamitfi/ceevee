@@ -18,12 +18,6 @@ variable "api_image" {
   type        = string
 }
 
-variable "database_url" {
-  description = "Database connection string"
-  type        = string
-  sensitive   = true
-}
-
 variable "domain_name" {
   description = "Domain name for the API"
   type        = string
@@ -54,11 +48,16 @@ variable "max_scale" {
 variable "memory_limit" {
   description = "Memory limit for Cloud Run service"
   type        = string
-  default     = "4Gi"    # 4 GB
+  default     = "4Gi" # 4 GB
 }
 
 variable "cpu_limit" {
   description = "CPU limit for Cloud Run service"
   type        = string
-  default     = "2000m"  # 2 vCPU
+  default     = "2000m" # 2 vCPU
+}
+
+variable "database_url_secret" {
+  description = "The Secret Manager secret ID for the database URL"
+  type        = string
 }

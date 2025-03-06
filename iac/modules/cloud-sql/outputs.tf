@@ -12,3 +12,8 @@ output "database_connection" {
   }
   sensitive = true
 }
+
+output "database_url_secret" {
+  description = "The secret ID for the database URL"
+  value       = google_secret_manager_secret.database_url.id
+}

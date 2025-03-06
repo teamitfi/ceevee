@@ -6,11 +6,20 @@ variable "project_id" {
 variable "region" {
   description = "GCP Region"
   type        = string
-  default     = "europe-north1"
 }
 
 variable "environment" {
   description = "Environment (dev/prod)"
   type        = string
-  default     = "dev"
+}
+
+variable "vpc_id" {
+  description = "VPC ID where database will be deployed"
+  type        = string
+}
+
+variable "database_user" {
+  description = "The database user to create"
+  type        = string
+  default     = "postgres"
 }

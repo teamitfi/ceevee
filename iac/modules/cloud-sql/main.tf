@@ -17,11 +17,11 @@ resource "google_sql_database_instance" "instance" {
   database_version = "POSTGRES_17"
   region           = var.region
 
-  depends_on = [google_service_networking_connection.private_vpc_connection]
+  depends_on          = [google_service_networking_connection.private_vpc_connection]
   deletion_protection = var.environment == "prod" ? true : false
 
   settings {
-    tier = "db-f1-micro"
+    tier            = "db-f1-micro"
     disk_autoresize = true
     disk_size       = 10
     edition         = "ENTERPRISE"
@@ -52,7 +52,7 @@ resource "google_sql_database_instance" "instance" {
     }
 
     availability_type = "ZONAL"
-    
+
     ip_configuration {
       ipv4_enabled                                  = false
       private_network                               = var.vpc_id
@@ -61,12 +61,16 @@ resource "google_sql_database_instance" "instance" {
     }
 
     backup_configuration {
-      enabled    = true
-      location   = var.region
-      start_time = "02:00"
+      enabled                        = true
+      location                       = var.region
+      start_time                     = "02:00"
       point_in_time_recovery_enabled = var.environment == "prod" ? true : false
     }
-  }  
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "google_sql_database" "database" {
@@ -74,6 +78,10 @@ resource "google_sql_database" "database" {
   instance = google_sql_database_instance.instance.name
 
   depends_on = [google_sql_database_instance.instance]
+
+  timeouts {
+    create = "20m"
+  }
 }
 
 # Generate a secure random password
@@ -86,7 +94,7 @@ resource "random_password" "db_password" {
 # Create separate secrets for username and password
 resource "google_secret_manager_secret" "db_username" {
   secret_id = "ceevee_database_username_${var.environment}"
-  
+
   replication {
     auto {}
   }
@@ -98,7 +106,7 @@ resource "google_secret_manager_secret" "db_username" {
 
 resource "google_secret_manager_secret" "db_password" {
   secret_id = "ceevee_database_password_${var.environment}"
-  
+
   replication {
     auto {}
   }
@@ -110,22 +118,22 @@ resource "google_secret_manager_secret" "db_password" {
 
 # Store username and password separately
 resource "google_secret_manager_secret_version" "db_username" {
-  secret      = google_secret_manager_secret.db_username.id
-  secret_data = "postgres"
+  secret         = google_secret_manager_secret.db_username.id
+  secret_data_wo = var.database_user
 }
 
 resource "google_secret_manager_secret_version" "db_password" {
-  secret      = google_secret_manager_secret.db_password.id
-  secret_data = random_password.db_password.result
+  secret         = google_secret_manager_secret.db_password.id
+  secret_data_wo = random_password.db_password.result
 }
 
 # Updated to use generated password
 resource "google_sql_user" "users" {
-  name            = "postgres"
+  name            = var.database_user
   instance        = google_sql_database_instance.instance.name
   password        = random_password.db_password.result
-  type            = "BUILT_IN"  # Explicitly set as built-in user
-  deletion_policy = "ABANDON"   # Don't try to delete the postgres user
+  type            = "BUILT_IN" # Explicitly set as built-in user
+  deletion_policy = "ABANDON"  # Don't try to delete the postgres user
 
   depends_on = [
     google_sql_database_instance.instance,
@@ -171,16 +179,45 @@ resource "google_secret_manager_secret" "db_ssl_ca" {
 }
 
 resource "google_secret_manager_secret_version" "db_ssl_cert" {
-  secret      = google_secret_manager_secret.db_ssl_cert.id
-  secret_data = google_sql_ssl_cert.client_cert.cert
+  secret         = google_secret_manager_secret.db_ssl_cert.id
+  secret_data_wo = google_sql_ssl_cert.client_cert.cert
 }
 
 resource "google_secret_manager_secret_version" "db_ssl_key" {
-  secret      = google_secret_manager_secret.db_ssl_key.id
-  secret_data = google_sql_ssl_cert.client_cert.private_key
+  secret         = google_secret_manager_secret.db_ssl_key.id
+  secret_data_wo = google_sql_ssl_cert.client_cert.private_key
 }
 
 resource "google_secret_manager_secret_version" "db_ssl_ca" {
-  secret      = google_secret_manager_secret.db_ssl_ca.id
-  secret_data = google_sql_ssl_cert.client_cert.server_ca_cert
+  secret         = google_secret_manager_secret.db_ssl_ca.id
+  secret_data_wo = google_sql_ssl_cert.client_cert.server_ca_cert
+}
+
+# Construct database URL
+locals {
+  database_url = format("postgresql://%s:%s@%s:%d/%s",
+    var.database_user,
+    random_password.db_password.result,
+    google_sql_database_instance.instance.private_ip_address,
+    5432,
+    google_sql_database.database.name
+  )
+}
+
+# Create secret for the complete DATABASE_URL
+resource "google_secret_manager_secret" "database_url" {
+  secret_id = "ceevee_database_url_${var.environment}"
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_secret_manager_secret_version" "database_url" {
+  secret         = google_secret_manager_secret.database_url.id
+  secret_data_wo = local.database_url
 }
