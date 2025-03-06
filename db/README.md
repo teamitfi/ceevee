@@ -9,7 +9,7 @@ This folder contains the configuration for the database using PostgreSQL.
 ## Running the Database as Docker container
 - Build and run the container:
    ```bash
-   docker compose up --build -d ceevee-db
+   docker compose --env-file .env.docker up --build -d ceevee-db
 
 - Close the container:
    ```bash
@@ -29,4 +29,4 @@ This folder contains the configuration for the database using PostgreSQL.
 
 - Connect to the db container
     ```bash
-    docker exec -it ceevee-db psql -U user -d postgres
+    docker exec -it ceevee-db psql -U root -d ceevee

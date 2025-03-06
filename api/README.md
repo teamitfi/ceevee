@@ -33,7 +33,7 @@
 ## Running the API as Docker container
 - Build and run the container:
    ```bash
-   docker compose up --build -d ceevee-api
+   docker compose --env-file .env.docker up --build -d ceevee-api
 
 - Build and run the container:
    ```bash

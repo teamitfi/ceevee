@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.docker
+
+# Exclude generated keys but include key generation script
+/keys/*
+!/keys/.gitkeep
+
+# IDE files
+.idea/
+.vscode/

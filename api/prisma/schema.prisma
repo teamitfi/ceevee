@@ -15,11 +15,25 @@ datasource db {
 }
 
 model Users {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  cognitoId String   @unique
-  roles     String[] @default(["user"])
-  createdAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String   // Hashed password
+  roles        String[] @default(["user"])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  refreshTokens RefreshToken[]
 
-  @@map("users") // Explicitly ensure DB table is "users"
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      Users    @relation(fields: [userId], references: [id])
+  issuedAt  DateTime @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  @@map("refreshToken")
 }

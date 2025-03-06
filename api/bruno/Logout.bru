@@ -1,11 +1,11 @@
 meta {
-  name: Refresh token
+  name: Logout
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
-  url: {{origin}}/api/v1/public/refresh-token
+  url: {{origin}}/api/v1/public/logout
   body: json
   auth: none
 }
@@ -20,5 +20,5 @@ script:pre-request {
 }
 
 script:post-response {
-  bru.setVar("accessToken", res.body.accessToken);
+  bru.deleteAllVars()
 }

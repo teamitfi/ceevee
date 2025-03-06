@@ -1,38 +1,38 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "Express API with AWS Cognito and JWT Authentication",
+  "description": "Express API with OAuth 2.0 and JWT Authentication",
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc",
     "dev": "nodemon --watch src --ext ts --exec tsx src/server.ts",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix",
+    "generate-keys": "tsx scripts/generate-keys.ts",
+    "create-admin": "tsx scripts/create-admin.ts",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:generate": "prisma generate",
+    "setup": "yarn install && yarn generate-keys && yarn prisma:generate && yarn build"
   },
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.738.0",
     "@prisma/client": "^6.3.0",
-    "aws-sdk": "^2.1692.0",
+    "argon2": "^0.41.1",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.18.0",
     "jsonwebtoken": "^9.0.0",
-    "jwks-rsa": "^3.1.0",
     "prisma": "^6.3.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.19.0",
-    "@typescript-eslint/eslint-plugin": "^8.23.0",
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.23.0",
     "eslint": "^9.19.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-import-resolver-typescript": "^3.7.0",
     "nodemon": "^3.1.9",
-    "ts-node": "^10.9.1",
     "tsx": "^4.19.2",
-    "typescript": "^5.0.0",
-    "typescript-eslint": "^8.23.0"
+    "typescript": "^5.0.0"
   },
   "author": "Sebastian Nikkonen",
   "license": "MIT"
