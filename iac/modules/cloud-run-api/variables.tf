@@ -61,3 +61,8 @@ variable "database_url_secret" {
   description = "The Secret Manager secret ID for the database URL"
   type        = string
 }
+
+variable "repository_id" {
+  description = "The ID of the Artifact Registry repository"
+  type        = string
+}

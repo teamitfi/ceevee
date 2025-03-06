@@ -14,13 +14,12 @@ variable "environment" {
 }
 
 variable "repository_id" {
-  description = "ID of the Artifact Registry repository"
+  description = "Base repository ID (will be suffixed with environment)"
   type        = string
-  default     = "ceevee"
 }
 
 variable "repository_description" {
-  description = "Description of the Artifact Registry repository"
+  description = "Description of the Artifact repository repository"
   type        = string
-  default     = "Container registry for Ceevee applications"
+  default     = "Container repository for Ceevee applications"
 }

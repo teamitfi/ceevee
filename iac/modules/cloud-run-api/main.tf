@@ -170,3 +170,12 @@ resource "google_project_iam_member" "api_cloudrun" {
   role    = "roles/run.invoker"
   member  = "serviceAccount:${google_service_account.api.email}"
 }
+
+# Allow Cloud Run to pull images from Artifact Registry
+resource "google_artifact_registry_repository_iam_member" "api_registry_reader" {
+  project    = var.project_id
+  location   = var.region
+  repository = var.repository_id
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.api.email}"
+}
