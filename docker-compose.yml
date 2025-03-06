@@ -31,8 +31,7 @@ services:
     depends_on:
       ceevee-db:
         condition: service_healthy
-#    entrypoint: ["/bin/sh", "-c", "yarn prisma migrate deploy && exec node dist/server.js"]
-    entrypoint: ["/bin/sh", "-c", "echo 'Using DB_HOST: $$DB_HOST' && yarn prisma migrate deploy && exec node dist/server.js"]
+    entrypoint: ["/bin/sh", "-c", "yarn prisma migrate deploy && exec node dist/server.js"]
 
   ceevee-ui:
     image: ceevee-ui

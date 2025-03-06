@@ -3,7 +3,7 @@ import { Box, Button, Card, Container, Flex, Grid, Text, TextField } from '@radi
 import { type ActionFunctionArgs, data, Form, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/login';
 import { getSessionCookie, setCookie, setCookies } from '~/sessions.server';
-import { getApiUrl } from '~/utils';
+import { getApiUrl, setHeaders } from '~/utils';
 
 export interface User {
   id: string;               // Unique ID from database
@@ -33,16 +33,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return redirect('/login', { headers: await setCookie({ error: 'Invalid username/password' }) });
   }
 
-  const res = await fetch(`${getApiUrl()}/api/v1/public/login`, {
+  const loginResponse = await fetch(`${getApiUrl()}/api/v1/public/login`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: { 'Content-Type': 'application/json', credentials: 'include' }
   });
-
-  if (res.status !== 200) {
+  if (loginResponse.status !== 200) {
     return redirect('/login', { headers: await setCookie({ error: 'Invalid username/password' }) });
   }
-  return redirect('/dashboard', { headers: await setCookies(await res.json())});
+  const loginData = await loginResponse.json()
+
+  const profileResponse = await fetch(`${getApiUrl()}/api/v1/private/profile`, {
+    headers: setHeaders(loginData.accessToken)
+  })
+  const profileData = await profileResponse.json()
+  return redirect('/dashboard', { headers: await setCookies({ ...loginData, ...profileData })});
 }
 
 const Login = (data: Route.ComponentProps) => {

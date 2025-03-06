@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import * as argon2 from 'argon2';
 import prisma from '../db.js';
-import { TokenService } from '../services/tokenService.js';
+import { generateAuthTokens, verifyRefreshToken, revokeRefreshToken } from '../services/tokenService.js';
 
 /**
  * @route POST /api/v1/public/login
@@ -37,7 +37,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Generate tokens
-    const tokens = await TokenService.generateAuthTokens(user);
+    const tokens = await generateAuthTokens(user);
 
     res.json(tokens);
   } catch (error) {
@@ -58,9 +58,9 @@ export const refreshToken = async (req: Request, res: Response) => {
   if (!authHeader) {
     return res.status(401).json({ error: 'access_denied', error_description: 'No token provided' });
   }
-  const refreshToken = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
-  if (!refreshToken) {
+  if (!token) {
     return res.status(400).json({
       error: 'invalid_request',
       error_description: 'Refresh token is required'
@@ -69,7 +69,7 @@ export const refreshToken = async (req: Request, res: Response) => {
 
   try {
     // Verify refresh token
-    const payload = await TokenService.verifyRefreshToken(refreshToken);
+    const payload = await verifyRefreshToken(token);
 
     // Find user
     const user = await prisma.users.findUnique({
@@ -84,10 +84,10 @@ export const refreshToken = async (req: Request, res: Response) => {
     }
 
     // Revoke old refresh token
-    await TokenService.revokeRefreshToken(refreshToken);
+    await revokeRefreshToken(token);
 
     // Generate new tokens
-    const tokens = await TokenService.generateAuthTokens(user);
+    const tokens = await generateAuthTokens(user);
 
     res.json(tokens);
   } catch (error) {
@@ -107,9 +107,9 @@ export const logout = async (req: Request, res: Response) => {
   if (!authHeader) {
     return res.status(401).json({ error: 'access_denied', error_description: 'No token provided' });
   }
-  const refreshToken = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
-  if (!refreshToken) {
+  if (!token) {
     return res.status(400).json({
       error: 'invalid_request',
       error_description: 'Refresh token is required'
@@ -118,7 +118,7 @@ export const logout = async (req: Request, res: Response) => {
 
   try {
     // Revoke refresh token
-    await TokenService.revokeRefreshToken(refreshToken);
+    await revokeRefreshToken(token);
     res.status(200).json({ message: 'Successfully logged out' });
   } catch (error) {
     res.status(400).json({

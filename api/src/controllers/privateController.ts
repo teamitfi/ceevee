@@ -1,10 +1,23 @@
 import type {Request, Response} from 'express';
 import * as argon2 from 'argon2';
 import prisma from '../db.js';
-import { TokenService } from "../services/tokenService.js";
+import { generateAuthTokens } from "../services/tokenService.js";
 
-export const getProfile = (req: Request, res: Response) => {
-  res.json({ user: req.user });
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    const user = await prisma.users.findUnique({
+      where: { id: req.user?.id },
+      select: { id: true, email: true, roles: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 };
 
 export const getUsers = async (_req: Request, res: Response) => {
@@ -21,7 +34,7 @@ export const getUsers = async (_req: Request, res: Response) => {
  * @desc Registers a new user
  */
 export const register = async (req: Request, res: Response) => {
-  const {email, password, roles} = req.body;
+  const { email, password, roles } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({
@@ -57,9 +70,9 @@ export const register = async (req: Request, res: Response) => {
     });
 
     // Generate tokens
-    const tokens = await TokenService.generateAuthTokens(user);
+    await generateAuthTokens(user);
 
-    res.status(201).json(tokens);
+    res.status(201)
   } catch (error) {
     res.status(500).json({
       error: 'server_error',

@@ -3,16 +3,12 @@ import type {Route} from '../../.react-router/types/app/routes/+types/login';
 import {data} from 'react-router';
 import {getAccessTokenCookie} from '~/sessions.server';
 import type {User} from '~/routes/login';
-import { getApiUrl } from '~/utils';
+import { getApiUrl, setHeaders } from '~/utils';
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   const accessToken = await getAccessTokenCookie(request);
   const res = await fetch(`${getApiUrl()}/api/v1/private/users`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      credentials: 'include',
-      'Content-Type': 'application/json',
-    }
+    headers: setHeaders(accessToken)
   });
   return data(await res.json());
 }

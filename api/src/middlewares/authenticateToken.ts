@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { TokenService } from '../services/tokenService.js';
+import { verifyAccessToken } from '../services/tokenService.js';
 
 export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
@@ -10,7 +10,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
   const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
   try {
-    const payload = await TokenService.verifyAccessToken(token);
+    const payload = await verifyAccessToken(token);
     req.user = {
       id: payload.sub,
       email: payload.email,

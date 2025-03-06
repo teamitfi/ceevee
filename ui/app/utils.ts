@@ -4,3 +4,11 @@ export const getApiUrl = () => {
   }
   return process.env.API_ORIGIN || 'http://localhost:4000';
 };
+
+export const setHeaders = (accessToken: string)=> {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+    credentials: 'include',
+    'Content-Type': 'application/json',
+  };
+}

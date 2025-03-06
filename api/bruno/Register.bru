@@ -1,18 +1,25 @@
 meta {
-  name: Profile
+  name: Register
   type: http
-  seq: 5
+  seq: 4
 }
 
-get {
-  url: {{origin}}/api/v1/private/profile
-  body: none
+post {
+  url: {{origin}}/api/v1/private/register
+  body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
-  Authorization: Authorization: Bearer {{getVar("accessToken")}}
+}
+
+body:json {
+  {
+    "email": "test@example.com",
+    "password": "test",
+    "roles": ["admin", "user"]
+  }
 }
 
 script:pre-request {
