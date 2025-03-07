@@ -19,3 +19,5 @@ registry_writers = [
   "sebastian.nikkonen@teamit.fi",
   "andreas.granqvist@teamit.fi"
 ]
+
+image_tag = "50f4302"

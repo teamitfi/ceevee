@@ -57,12 +57,17 @@ variable "cpu_limit" {
   default     = "1000m" # 2 vCPU
 }
 
-variable "database_url_secret" {
+variable "database_url_secret_id" {
   description = "The Secret Manager secret ID for the database URL"
   type        = string
 }
 
 variable "repository_id" {
   description = "The ID of the Artifact Registry repository"
+  type        = string
+}
+
+variable "image_tag" {
+  description = "The tag of the container image"
   type        = string
 }

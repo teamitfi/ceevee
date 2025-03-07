@@ -65,3 +65,8 @@ variable "registry_writers" {
   type        = list(string)
   default     = []
 }
+
+variable "image_tag" {
+  description = "The tag for the API container image"
+  type        = string
+}

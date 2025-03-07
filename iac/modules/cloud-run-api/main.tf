@@ -1,8 +1,3 @@
-# Validate container image exists
-data "google_container_registry_image" "api" {
-  name = var.api_image
-}
-
 # Configure Cloud Run service
 resource "google_cloud_run_v2_service" "api" {
   name                = "ceevee-api-${var.environment}"
@@ -18,7 +13,7 @@ resource "google_cloud_run_v2_service" "api" {
     }
 
     containers {
-      image = data.google_container_registry_image.api.image_url
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.repository_id}/api:${var.image_tag}"
 
       command = ["/bin/sh", "-c"]
       args    = ["yarn prisma migrate deploy && exec node dist/server.js"]
@@ -43,7 +38,7 @@ resource "google_cloud_run_v2_service" "api" {
         name = "DATABASE_URL"
         value_source {
           secret_key_ref {
-            secret  = var.database_url_secret
+            secret  = var.database_url_secret_id
             version = "latest"
           }
         }
