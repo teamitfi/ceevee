@@ -49,43 +49,41 @@
 
 ---
 
-# 🚀 API Authentication Flow (AWS Cognito + JWT)
+# 🚀 API Authentication Flow
 
-This API uses **AWS Cognito for authentication** and **JWT tokens for session management**.  
-After the initial login, JWT is used to **authenticate all API requests** without needing to check AWS Cognito repeatedly.
+This API uses **JWT tokens for authentication and session management**.
+All API requests are authenticated using JWT tokens issued by our API.
 
 ---
 
 ## **📌 How the Login Process Works**
 
-1️⃣ **User submits login credentials**  
-2️⃣ **API validates the credentials with AWS Cognito**  
-3️⃣ **Checks if the user exists in the local database**  
-4️⃣ **Creates the user (if not found) and assigns a role**  
-5️⃣ **Issues a JWT token**  
-6️⃣ **Frontend stores the token for future API requests**  
-7️⃣ **All further requests use JWT authentication** (AWS Cognito is not queried again)
+1️⃣ **User submits login credentials**
+2️⃣ **API validates the credentials against stored hashed passwords**
+3️⃣ **Issues JWT tokens (access + refresh tokens)**
+4️⃣ **Frontend stores tokens for future API requests**
+5️⃣ **All further requests use JWT authentication**
 
 ---
 
-## **📌 Full Summary of the Login Process**
+## **📌 Summary of the Login Process**
 
-| **Step** | **Action Taken** | **Database Interaction?** | **AWS Cognito Interaction?** |
-|------------|----------------|--------------------------|------------------------------|
-| **1. User sends login request** | Frontend sends email + password | ❌ No | ✅ Yes |
-| **2. Validate credentials** | AWS Cognito verifies credentials | ❌ No | ✅ Yes |
-| **3. Check if user exists** | Find user in database | ✅ Yes | ❌ No |
-| **4. Create user (if needed)** | Store user with AWS Cognito ID | ✅ Yes | ❌ No |
-| **5. Generate JWT** | Issue a local JWT | ❌ No | ❌ No |
-| **6. Frontend stores JWT** | Store token in localStorage/cookies | ❌ No | ❌ No |
-| **7. User makes authenticated request** | JWT is verified, request proceeds | ✅ Only if needed | ❌ No |
+| **Step** | **Action** |
+|----------|------------|
+| **1. Authentication** | Frontend → API: Submit credentials: Validate user & password
+| **2. Token Generation** | API: Generate & store tokens → Frontend: Return tokens
+| **3. Token Usage** | Frontend: Store in HTTP-only cookies: Cryptographically verify tokens
 
 ---
 
 ## **📌 Key Takeaways**
-✅ **AWS Cognito is ONLY used at login.**  
-✅ **Our own JWT is used for all API requests.**  
-✅ **The database is ONLY queried when a user logs in (to store role & metadata).**  
-✅ **No need to query AWS Cognito repeatedly.**
+
+✅ **Authentication is handled entirely by our API**
+
+✅ **Passwords are securely hashed using Argon2**
+
+✅ **Access tokens are short-lived (30min)**
+
+✅ **Refresh tokens enable seamless session extension**
 
 ---

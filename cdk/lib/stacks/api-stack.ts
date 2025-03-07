@@ -5,7 +5,6 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NetworkStack } from "./network-stack";
 import { DatabaseStack } from "./db-stack";
-import { CognitoStack } from "./cognito-stack";
 import { EcrStack } from "./ecr-stack";
 
 interface ApiStackProps extends cdk.StackProps {
@@ -68,8 +67,6 @@ export class ApiStack extends cdk.Stack {
         // Secrets injected as environment variables
         secrets: {
           DATABASE_URL: ecs.Secret.fromSecretsManager(apiSecret, 'DATABASE_URL'),
-          COGNITO_CLIENT_ID: ecs.Secret.fromSecretsManager(apiSecret, 'COGNITO_CLIENT_ID'),
-          COGNITO_USER_POOL_ID: ecs.Secret.fromSecretsManager(apiSecret, 'COGNITO_USER_POOL_ID'),
         },
 
         // Startup command

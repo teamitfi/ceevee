@@ -3,7 +3,6 @@
 This module creates Ceevee infrastructure using AWS CDK, including:
 - VPC and Network Infrastructure
 - RDS PostgreSQL Database
-- Cognito User Authentication
 - ECR Container Registry
 - API Infrastructure
 
@@ -25,7 +24,12 @@ This module creates Ceevee infrastructure using AWS CDK, including:
 
 ### Infrastructure Deployment
 ```bash
-  # Deploy VPC, ECR, and Cognito
+  # Or deploy everything at once
+  yarn deploy:all
+```
+
+```bash
+  # Deploy VPC and ECR
   yarn deploy:infra
 ```
 
@@ -40,8 +44,13 @@ This module creates Ceevee infrastructure using AWS CDK, including:
 ```
 
 ```bash
-  # Or deploy everything at once
-  yarn deploy:all
+  # Deploy UI
+  yarn deploy:ui
+```
+
+```bash
+  # Deploy CloudFront
+  yarn deploy:cloudfront
 ```
 
 ## Database Access Setup
@@ -111,8 +120,8 @@ Private key: /Users/<your-username>/.ssh/ceevee/ceevee-bastion-key.pem
 ## Cleanup
 
 ```bash
-  # Remove API infrastructure
-  yarn destroy:api
+  # Remove base infrastructure
+  yarn destroy:infra
 ```
 
 ```bash
@@ -121,8 +130,18 @@ Private key: /Users/<your-username>/.ssh/ceevee/ceevee-bastion-key.pem
 ```
 
 ```bash
-  # Remove base infrastructure
-  yarn destroy:infra
+  # Remove API infrastructure
+  yarn destroy:api
+```
+
+```bash
+  # Remove UI infrastructure
+  yarn destroy:ui
+```
+
+```bash
+  # Remove CloudFront
+  yarn destroy:cloudfront
 ```
 
 ## Development
@@ -147,8 +166,9 @@ Private key: /Users/<your-username>/.ssh/ceevee/ceevee-bastion-key.pem
   npx cdk diff
 ```
 
-```
-  yarn ts-node scripts/create-user.ts "<username>" "<password>"
+```bash
+  # Create a new user (admin)
+  yarn ts-node scripts/create-user.ts "<email>" "<password>" "admin"
 ```
 
 ## References

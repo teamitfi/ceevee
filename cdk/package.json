@@ -11,13 +11,13 @@
     "test": "jest",
     "cdk": "cdk",
     "deploy:all": "cdk deploy --all",
-    "deploy:infra": "cdk deploy CeeveeEcrStack CeeveeNetworkStack CeeveeCognitoStack",
+    "deploy:infra": "cdk deploy CeeveeEcrStack CeeveeNetworkStack",
     "deploy:db": "cdk deploy CeeveeDbStack",
     "deploy:api": "cdk deploy CeeveeApiStack",
     "deploy:ui": "cdk deploy CeeveeUiStack",
     "deploy:n8n": "cdk deploy CeeveeN8nStack",
     "deploy:cloudfront": "cdk deploy CeeveeCloudFrontStack",
-    "destroy:infra": "cdk destroy CeeveeEcrStack CeeveeNetworkStack CeeveeCognitoStack",
+    "destroy:infra": "cdk destroy CeeveeEcrStack CeeveeNetworkStack",
     "destroy:db": "cdk destroy CeeveeDbStack",
     "destroy:api": "cdk destroy CeeveeApiStack",
     "destroy:ui": "cdk destroy CeeveeUiStack",
@@ -26,7 +26,6 @@
     "db:list": "aws rds describe-db-instances --output table"
   },
   "devDependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.750.0",
     "@types/jest": "^29.5.14",
     "@types/node": "22.7.9",
     "aws-cdk": "2.1001.0",

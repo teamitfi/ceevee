@@ -7,10 +7,10 @@ import { getApiUrl, setHeaders } from '~/utils';
 
 export interface User {
   id: string;               // Unique ID from database
-  cognitoId: string;        // AWS Cognito User ID
   email: string;            // User Email
   roles: ['admin', 'user']; // Roles (e.g., ["user", "admin"])
   createdAt?: string;       // ISO Date format
+  updatedAt?: string;       // ISO Date format
 }
 
 export interface LoginResponse {
