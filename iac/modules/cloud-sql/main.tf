@@ -1,5 +1,5 @@
 resource "google_compute_global_address" "private_ip_address" {
-  name          = "ceevee-db-ip"
+  name          = "ceevee-db-ip-${var.environment}"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
@@ -21,10 +21,10 @@ resource "google_sql_database_instance" "instance" {
   deletion_protection = var.environment == "prod" ? true : false
 
   settings {
-    tier            = "db-f1-micro"
-    disk_autoresize = true
-    disk_size       = 10
-    edition         = "ENTERPRISE"
+    tier            = var.instance_settings.tier
+    disk_autoresize = var.instance_settings.disk_autoresize
+    disk_size       = var.instance_settings.disk_size
+    edition         = var.instance_settings.edition
 
     database_flags {
       name  = "log_disconnections"
@@ -73,7 +73,24 @@ resource "google_sql_database_instance" "instance" {
   }
 }
 
-resource "google_sql_database" "database" {
+# Define local variables for usernames
+locals {
+  n8n_username    = "n8n_user"
+  ceevee_username = "ceevee_user"
+}
+
+resource "google_sql_database" "n8n" {
+  name     = "n8n"
+  instance = google_sql_database_instance.instance.name
+
+  depends_on = [google_sql_database_instance.instance]
+
+  timeouts {
+    create = "20m"
+  }
+}
+
+resource "google_sql_database" "ceevee" {
   name     = "ceevee"
   instance = google_sql_database_instance.instance.name
 
@@ -84,15 +101,33 @@ resource "google_sql_database" "database" {
   }
 }
 
-# Generate a secure random password
-resource "random_password" "db_password" {
+# Generate secure random passwords
+resource "random_password" "n8n_password" {
   length           = 32
   special          = true
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
-# Create separate secrets for username and password
-resource "google_secret_manager_secret" "db_username" {
+resource "random_password" "ceevee_password" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+# Create secrets for usernames and passwords
+resource "google_secret_manager_secret" "n8n_username" {
+  secret_id = "n8n_database_username_${var.environment}"
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_secret_manager_secret" "ceevee_username" {
   secret_id = "ceevee_database_username_${var.environment}"
 
   replication {
@@ -104,7 +139,19 @@ resource "google_secret_manager_secret" "db_username" {
   }
 }
 
-resource "google_secret_manager_secret" "db_password" {
+resource "google_secret_manager_secret" "n8n_password" {
+  secret_id = "n8n_database_password_${var.environment}"
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_secret_manager_secret" "ceevee_password" {
   secret_id = "ceevee_database_password_${var.environment}"
 
   replication {
@@ -116,44 +163,86 @@ resource "google_secret_manager_secret" "db_password" {
   }
 }
 
-# Store username and password separately
-resource "google_secret_manager_secret_version" "db_username" {
-  secret         = google_secret_manager_secret.db_username.id
-  secret_data_wo = var.database_user
+# Store usernames and passwords
+resource "google_secret_manager_secret_version" "n8n_username" {
+  secret         = google_secret_manager_secret.n8n_username.id
+  secret_data_wo = local.n8n_username
 }
 
-resource "google_secret_manager_secret_version" "db_password" {
-  secret         = google_secret_manager_secret.db_password.id
-  secret_data_wo = random_password.db_password.result
+resource "google_secret_manager_secret_version" "ceevee_username" {
+  secret         = google_secret_manager_secret.ceevee_username.id
+  secret_data_wo = local.ceevee_username
 }
 
-# Updated to use generated password
-resource "google_sql_user" "users" {
-  name            = var.database_user
+resource "google_secret_manager_secret_version" "n8n_password" {
+  secret         = google_secret_manager_secret.n8n_password.id
+  secret_data_wo = random_password.n8n_password.result
+}
+
+resource "google_secret_manager_secret_version" "ceevee_password" {
+  secret         = google_secret_manager_secret.ceevee_password.id
+  secret_data_wo = random_password.ceevee_password.result
+}
+
+# Create database users
+resource "google_sql_user" "n8n_user" {
+  name            = local.n8n_username
   instance        = google_sql_database_instance.instance.name
-  password        = random_password.db_password.result
-  type            = "BUILT_IN" # Explicitly set as built-in user
-  deletion_policy = "ABANDON"  # Don't try to delete the postgres user
+  password_wo     = random_password.n8n_password.result
+  type            = "BUILT_IN"
+  deletion_policy = "ABANDON"
 
   depends_on = [
     google_sql_database_instance.instance,
-    google_sql_database.database
+    google_sql_database.n8n
   ]
 }
 
-# Construct database URL
+resource "google_sql_user" "ceevee_user" {
+  name            = local.ceevee_username
+  instance        = google_sql_database_instance.instance.name
+  password_wo     = random_password.ceevee_password.result
+  type            = "BUILT_IN"
+  deletion_policy = "ABANDON"
+
+  depends_on = [
+    google_sql_database_instance.instance,
+    google_sql_database.ceevee
+  ]
+}
+
+# Construct database URLs
 locals {
-  database_url = format("postgresql://%s:%s@%s:%d/%s",
-    var.database_user,
-    random_password.db_password.result,
+  n8n_database_url = format("postgresql://%s:%s@%s:%d/%s",
+    local.n8n_username,
+    random_password.n8n_password.result,
     google_sql_database_instance.instance.private_ip_address,
     5432,
-    google_sql_database.database.name
+    google_sql_database.n8n.name
+  )
+  ceevee_database_url = format("postgresql://%s:%s@%s:%d/%s",
+    local.ceevee_username,
+    random_password.ceevee_password.result,
+    google_sql_database_instance.instance.private_ip_address,
+    5432,
+    google_sql_database.ceevee.name
   )
 }
 
-# Create secret for the complete DATABASE_URL
-resource "google_secret_manager_secret" "database_url" {
+# Create secrets for the complete DATABASE_URLs
+resource "google_secret_manager_secret" "n8n_database_url" {
+  secret_id = "n8n_database_url_${var.environment}"
+
+  replication {
+    auto {}
+  }
+
+  labels = {
+    environment = var.environment
+  }
+}
+
+resource "google_secret_manager_secret" "ceevee_database_url" {
   secret_id = "ceevee_database_url_${var.environment}"
 
   replication {
@@ -165,7 +254,12 @@ resource "google_secret_manager_secret" "database_url" {
   }
 }
 
-resource "google_secret_manager_secret_version" "database_url" {
-  secret         = google_secret_manager_secret.database_url.id
-  secret_data_wo = local.database_url
+resource "google_secret_manager_secret_version" "n8n_database_url" {
+  secret         = google_secret_manager_secret.n8n_database_url.id
+  secret_data_wo = local.n8n_database_url
+}
+
+resource "google_secret_manager_secret_version" "ceevee_database_url" {
+  secret         = google_secret_manager_secret.ceevee_database_url.id
+  secret_data_wo = local.ceevee_database_url
 }

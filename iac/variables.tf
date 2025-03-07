@@ -48,8 +48,8 @@ variable "cpu_limit" {
   default     = "2000m"
 }
 
-variable "repository_id" {
-  description = "The ID of the Artifact Registry repository"
+variable "repository_base_id" {
+  description = "The base ID of the Artifact Registry repository"
   type        = string
   default     = "ceevee"
 }

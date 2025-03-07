@@ -27,11 +27,11 @@ module "network" {
 module "registry" {
   source = "./modules/artifact-registry"
 
-  project_id       = var.project_id
-  region           = var.region
-  environment      = var.environment
-  repository_id    = var.repository_id
-  registry_writers = var.registry_writers
+  project_id         = var.project_id
+  region             = var.region
+  environment        = var.environment
+  repository_base_id = var.repository_base_id
+  registry_writers   = var.registry_writers
 }
 
 module "database" {
@@ -40,9 +40,8 @@ module "database" {
   project_id  = var.project_id
   region      = var.region
   environment = var.environment
-
-  vpc_id     = module.network.vpc_id
-  depends_on = [module.network]
+  vpc_id      = module.network.vpc_id
+  depends_on  = [module.network]
 }
 
 module "n8n" {
@@ -52,23 +51,26 @@ module "n8n" {
   region      = var.region
   environment = var.environment
 
-  database_host      = module.database.database_connection.host
-  vpc_connector_name = module.network.vpc_connector_name
-  depends_on         = [module.database]
+  database_host               = module.database.database_host
+  database_name               = module.database.n8n_database_name
+  vpc_connector_name          = module.network.vpc_connector_name
+  database_username_secret_id = module.database.n8n_username_secret_id
+  database_password_secret_id = module.database.n8n_password_secret_id
+  depends_on                  = [module.database, module.network]
 }
 
-module "api" {
-  source = "./modules/cloud-run-api"
+# module "api" {
+#   source = "./modules/cloud-run-api"
 
-  project_id  = var.project_id
-  region      = var.region
-  environment = var.environment
+#   project_id  = var.project_id
+#   region      = var.region
+#   environment = var.environment
 
-  domain_name         = var.api_domain_name
-  api_image           = var.api_image
-  network_id          = module.network.vpc_id
-  vpc_connector_name  = module.network.vpc_connector_name
-  database_url_secret = module.database.database_url_secret
-  repository_id       = module.registry.repository_id
-  depends_on          = [module.database]
-}
+#   domain_name         = var.api_domain_name
+#   api_image           = var.api_image
+#   network_id          = module.network.vpc_id
+#   vpc_connector_name  = module.network.vpc_connector_name
+#   database_url_secret = module.database.database_url_secret
+#   repository_id       = module.registry.repository_id
+#   depends_on          = [module.database, module.network, module.registry]
+# }

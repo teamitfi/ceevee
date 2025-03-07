@@ -8,13 +8,3 @@ output "database" {
   value       = module.database.instance_name
 
 }
-
-# output "api_service_url" {
-#   description = "The URL of the API service"
-#   value       = module.api.service_url
-# }
-
-# output "api_load_balancer_ip" {
-#   description = "The IP address of the API load balancer"
-#   value       = module.api.load_balancer_ip
-# }

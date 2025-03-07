@@ -1,10 +1,10 @@
 resource "google_compute_network" "vpc" {
-  name                    = "ceevee-vpc-${var.environment}"
+  name                    = "ceevee-n8n-vpc-${var.environment}"
   auto_create_subnetworks = false
 }
 
 resource "google_compute_subnetwork" "private" {
-  name          = "ceevee-private-${var.environment}"
+  name          = "ceevee-n8n-private-${var.environment}"
   ip_cidr_range = "10.0.1.0/24"
   region        = var.region
   network       = google_compute_network.vpc.id
@@ -13,7 +13,7 @@ resource "google_compute_subnetwork" "private" {
 }
 
 resource "google_compute_subnetwork" "public" {
-  name          = "ceevee-public-${var.environment}"
+  name          = "ceevee-n8n-public-${var.environment}"
   ip_cidr_range = "10.0.2.0/24"
   region        = var.region
   network       = google_compute_network.vpc.id
@@ -21,7 +21,7 @@ resource "google_compute_subnetwork" "public" {
 
 # Create Serverless VPC connector
 resource "google_vpc_access_connector" "connector" {
-  name          = "vpc-con-${var.environment}" # Shorter, environment-specific name
+  name          = "ceevee-n8n-vpc-con-${var.environment}"
   ip_cidr_range = var.vpc_connector_cidr
   network       = google_compute_network.vpc.name
   region        = var.region

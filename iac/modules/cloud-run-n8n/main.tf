@@ -1,6 +1,6 @@
 # Create service account for N8N
 resource "google_service_account" "n8n" {
-  account_id   = "ceevee-n8n-${var.environment}"
+  account_id   = "n8n-${var.environment}"
   display_name = "Service Account for N8N"
   project      = var.project_id
 }
@@ -35,15 +35,14 @@ resource "google_secret_manager_secret_iam_member" "n8n_encryption_key_access" {
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.n8n.email}"
 }
-
 resource "google_secret_manager_secret_iam_member" "database_username_access" {
-  secret_id = "ceevee_database_username_${var.environment}"
+  secret_id = var.database_username_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.n8n.email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "database_password_access" {
-  secret_id = "ceevee_database_password_${var.environment}"
+  secret_id = var.database_password_secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.n8n.email}"
 }
@@ -59,7 +58,7 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
 
 # Create Cloud Run service
 resource "google_cloud_run_v2_service" "n8n" {
-  name                = "ceevee-n8n-${var.environment}"
+  name                = "n8n-${var.environment}"
   location            = var.region
   deletion_protection = false
 
@@ -103,7 +102,7 @@ resource "google_cloud_run_v2_service" "n8n" {
       }
       env {
         name  = "DB_POSTGRESDB_DATABASE"
-        value = "ceevee"
+        value = var.database_name
       }
       env {
         name  = "DB_POSTGRESDB_HOST"
@@ -133,7 +132,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_POSTGRESDB_USER"
         value_source {
           secret_key_ref {
-            secret  = "ceevee_database_username_${var.environment}"
+            secret  = var.database_username_secret_id
             version = "latest"
           }
         }
@@ -142,7 +141,7 @@ resource "google_cloud_run_v2_service" "n8n" {
         name = "DB_POSTGRESDB_PASSWORD"
         value_source {
           secret_key_ref {
-            secret  = "ceevee_database_password_${var.environment}"
+            secret  = var.database_password_secret_id
             version = "latest"
           }
         }
@@ -174,12 +173,4 @@ resource "google_cloud_run_v2_service" "n8n" {
       max_instance_count = 3
     }
   }
-}
-
-# Get the URL after the service is created
-data "google_cloud_run_v2_service" "n8n" {
-  name     = google_cloud_run_v2_service.n8n.name
-  location = google_cloud_run_v2_service.n8n.location
-
-  depends_on = [google_cloud_run_v2_service.n8n]
 }

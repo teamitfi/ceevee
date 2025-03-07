@@ -18,8 +18,18 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "database_user" {
-  description = "The database user to create"
-  type        = string
-  default     = "postgres"
+variable "instance_settings" {
+  description = "Database instance settings"
+  type = object({
+    tier            = string
+    disk_autoresize = bool
+    disk_size       = number
+    edition         = string
+  })
+  default = {
+    tier            = "db-f1-micro"
+    disk_autoresize = true
+    disk_size       = 10
+    edition         = "ENTERPRISE"
+  }
 }

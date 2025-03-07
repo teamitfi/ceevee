@@ -13,7 +13,7 @@ variable "environment" {
   type        = string
 }
 
-variable "repository_id" {
+variable "repository_base_id" {
   description = "Base repository ID (will be suffixed with environment)"
   type        = string
 }
