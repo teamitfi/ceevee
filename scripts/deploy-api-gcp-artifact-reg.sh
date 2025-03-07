@@ -17,12 +17,13 @@ cd "$(git rev-parse --show-toplevel)"
 echo "🔐 Authenticating with Google Cloud..."
 gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
 
-echo "🏗️  Building API image..."
-docker build -t ${API_IMAGE}:${VERSION} api/
+echo "🏗️  Building API image for amd64..."
+docker build --platform linux/amd64 -t ${API_IMAGE}:${VERSION} api/
 
-echo "🏗️  Building UI image..."
-docker build -t ${UI_IMAGE}:${VERSION} ui/
+echo "🏗️  Building UI image for amd64..."
+docker build --platform linux/amd64 -t ${UI_IMAGE}:${VERSION} ui/
 
+# ...rest of the script remains the same...
 echo "🏷️  Tagging images..."
 docker tag ${API_IMAGE}:${VERSION} ${REGISTRY_PATH}/${API_IMAGE}:${VERSION}
 docker tag ${API_IMAGE}:${VERSION} ${REGISTRY_PATH}/${API_IMAGE}:latest
