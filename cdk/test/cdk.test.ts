@@ -2,7 +2,6 @@ import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
 import { EcrStack } from '../lib/stacks/ecr-stack';
 import { NetworkStack } from '../lib/stacks/network-stack';
-import { CognitoStack } from '../lib/stacks/cognito-stack';
 import { DatabaseStack } from '../lib/stacks/db-stack';
 
 describe('Ceevee Infrastructure', () => {
@@ -33,14 +32,6 @@ describe('Ceevee Infrastructure', () => {
       
       template.resourceCountIs('AWS::ECS::Cluster', 1);
       template.resourceCountIs('AWS::EC2::VPC', 1);
-    });
-
-    test('Cognito Stack creates User Pool', () => {
-      const stack = new CognitoStack(app, 'TestCognitoStack', { env });
-      const template = Template.fromStack(stack);
-      
-      template.resourceCountIs('AWS::Cognito::UserPool', 1);
-      template.resourceCountIs('AWS::Cognito::UserPoolClient', 1);
     });
 
     test('Database Stack creates RDS instance', () => {

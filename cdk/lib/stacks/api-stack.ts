@@ -11,7 +11,6 @@ import { EcrStack } from "./ecr-stack";
 interface ApiStackProps extends cdk.StackProps {
   networkStack: NetworkStack;
   databaseStack: DatabaseStack;
-  cognitoStack: CognitoStack;
   ecrStack: EcrStack;
 }
 
@@ -28,8 +27,6 @@ export class ApiStack extends cdk.Stack {
         DATABASE_URL: cdk.SecretValue.unsafePlainText(
           `postgresql://${props.databaseStack.secret.secretValueFromJson('username').unsafeUnwrap()}:${props.databaseStack.secret.secretValueFromJson('password').unsafeUnwrap()}@${props.databaseStack.instance.instanceEndpoint.hostname}:5432/ceevee`
         ),
-        COGNITO_CLIENT_ID: cdk.SecretValue.unsafePlainText(props.cognitoStack.userPoolClient.userPoolClientId),
-        COGNITO_USER_POOL_ID: cdk.SecretValue.unsafePlainText(props.cognitoStack.userPool.userPoolId),
       }
     });
 

@@ -3,7 +3,6 @@ import { EcrStack } from '../lib/stacks/ecr-stack';
 import { NetworkStack } from '../lib/stacks/network-stack';
 import { DatabaseStack } from '../lib/stacks/db-stack';
 import { ApiStack } from '../lib/stacks/api-stack';
-import { CognitoStack } from '../lib/stacks/cognito-stack';
 import { UiStack } from '../lib/stacks/ui-stack';
 import { CeeveeCloudFrontStack } from '../lib/stacks/cloudfront-stack';
 import { N8nStack } from '../lib/stacks/n8n-stack';
@@ -16,7 +15,6 @@ const app = new cdk.App();
 // Infrastructure stacks
 const ecrStack = new EcrStack(app, 'CeeveeEcrStack', { env });
 const networkStack = new NetworkStack(app, 'CeeveeNetworkStack', { env });
-const cognitoStack = new CognitoStack(app, 'CeeveeCognitoStack', { env });
 
 // Database stack
 const databaseStack = new DatabaseStack(app, 'CeeveeDbStack', { env, networkStack });
@@ -27,7 +25,6 @@ const apiStack = new ApiStack(app, 'CeeveeApiStack', {
   ecrStack,
   networkStack,
   databaseStack,
-  cognitoStack
 });
 apiStack.addDependency(databaseStack);
 
