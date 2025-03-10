@@ -71,13 +71,10 @@ resource "google_cloud_run_v2_service" "n8n" {
     service_account = google_service_account.n8n.email
 
     containers {
-      image = "n8nio/n8n:latest"
+      image = "n8nio/n8n:${var.image_tag}"
 
       resources {
-        limits = {
-          cpu    = "1"
-          memory = "2Gi"
-        }
+        limits = var.cloud_run_resource_limits
       }
 
       # Port configuration for Cloud Run
@@ -85,8 +82,12 @@ resource "google_cloud_run_v2_service" "n8n" {
         container_port = 8080
       }
       env {
+        name  = "GENERIC_TIMEZONE"
+        value = var.service_timezone
+      }
+      env {
         name  = "N8N_HOST"
-        value = "0.0.0.0"
+        value = "n8n-${var.environment}.${var.hostname}"
       }
       env {
         name  = "N8N_PORT"
@@ -169,8 +170,8 @@ resource "google_cloud_run_v2_service" "n8n" {
     }
 
     scaling {
-      min_instance_count = 1
-      max_instance_count = 3
+      min_instance_count = var.min_instance_count
+      max_instance_count = var.max_instance_count
     }
   }
 }

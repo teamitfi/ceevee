@@ -59,19 +59,19 @@ module "n8n" {
   depends_on                  = [module.database, module.network]
 }
 
-module "api" {
-  source = "./modules/cloud-run-api"
+# module "api" {
+#   source = "./modules/cloud-run-api"
 
-  project_id  = var.project_id
-  region      = var.region
-  environment = var.environment
+#   project_id  = var.project_id
+#   region      = var.region
+#   environment = var.environment
 
-  domain_name            = var.api_domain_name
-  api_image              = var.api_image
-  network_id             = module.network.vpc_id
-  vpc_connector_name     = module.network.vpc_connector_name
-  database_url_secret_id = module.database.ceevee_database_url_secret_id
-  repository_id          = module.registry.repository_id
-  image_tag              = var.image_tag
-  depends_on             = [module.database, module.network, module.registry]
-}
+#   domain_name            = var.api_domain_name
+#   network_id             = module.network.vpc_id
+#   vpc_connector_name     = module.network.vpc_connector_name
+#   database_url_secret_id = module.database.ceevee_database_url_secret_id
+#   repository_id          = module.registry.repository_id
+#   image_name             = var.api_image_name
+#   image_tag              = var.api_image_tag
+#   depends_on             = [module.database, module.network, module.registry]
+# }

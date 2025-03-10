@@ -1,19 +1,25 @@
 # Ceevee
 
-Implement db, api and ui for a service to interact with LLMs
-- db uses Supabase Docker image
-- api uses express.js for REST API, prisma for ORM to access db
+Placeholder
 
-## Docker Setup
+## Features
 
-- Build and run the containers:
-   ```bash
-   docker compose up --build -d
+- xzy
 
-- Close the containers:
-   ```bash
-   docker compose down
+## Installation
 
-- Close the containers and remove volumes/orphans:
-   ```bash
-   docker compose down --volumes --remove-orphans
+```bash
+...
+```
+
+## Usage
+
+1. xyz
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+[MIT](LICENSE)
