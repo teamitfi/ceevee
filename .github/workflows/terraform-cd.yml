@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - development
           - staging
           - production
 
@@ -16,10 +17,25 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
-    name: 'Deploy Infrastructure'
+  plan:
+    name: 'Terraform Plan'
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
+
+    env:
+      TF_VAR_project_id: ${{ vars.PROJECT_ID }}
+      TF_VAR_region: ${{ vars.REGION }}
+      TF_VAR_environment: ${{ vars.ENVIRONMENT }}
+      TF_VAR_api_domain_name: ${{ vars.API_DOMAIN_NAME }}
+      TF_VAR_api_image_name: ${{ vars.API_IMAGE_NAME }}
+      TF_VAR_min_scale: ${{ vars.MIN_SCALE }}
+      TF_VAR_max_scale: ${{ vars.MAX_SCALE }}
+      TF_VAR_memory_limit: ${{ vars.MEMORY_LIMIT }}
+      TF_VAR_cpu_limit: ${{ vars.CPU_LIMIT }}
+      TF_VAR_repository_base_id: ${{ vars.REPOSITORY_BASE_ID }}
+      TF_VAR_repository_description: ${{ vars.REPOSITORY_DESCRIPTION }}
+      TF_VAR_registry_writers: ${{ vars.REGISTRY_WRITERS }}
+      TF_VAR_api_image_tag: ${{ vars.API_IMAGE_TAG }}
 
     defaults:
       run:
@@ -32,8 +48,8 @@ jobs:
     - name: Auth to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-        service_account: ${{ secrets.TERRAFORM_SA_EMAIL }}
+        workload_identity_provider: projects/${{ vars.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
@@ -41,16 +57,62 @@ jobs:
         terraform_version: '1.11.0'
 
     - name: Terraform Init
+      env:
+        GCS_BUCKET: ${{ vars.GCS_BUCKET }}
       run: |
         terraform init \
-          -backend-config="bucket=${{ secrets.GCS_BUCKET }}" \
-          -backend-config="prefix=${{ github.event.inputs.environment }}"
+          -backend-config="bucket=${GCS_BUCKET}" \
+          -backend-config="prefix=${{ vars.STATE_PREFIX }}"
 
     - name: Terraform Plan
+      run: terraform plan -out=tfplan-${{ github.event.inputs.environment }}
+
+    - name: Upload Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: tfplan-${{ github.event.inputs.environment }}
+        path: ./iac/tfplan-${{ github.event.inputs.environment }}
+        retention-days: 1
+        overwrite: true
+
+  apply:
+    name: 'Terraform Apply'
+    needs: plan
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    defaults:
+      run:
+        working-directory: ./iac
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Auth to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: projects/${{ vars.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+        service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: '1.11.0'
+
+    - name: Terraform Init
+      env:
+        GCS_BUCKET: ${{ vars.GCS_BUCKET }}
       run: |
-        terraform plan \
-          -var-file="environments/${{ github.event.inputs.environment }}.tfvars" \
-          -out=tfplan
+        terraform init \
+          -backend-config="bucket=${GCS_BUCKET}" \
+          -backend-config="prefix=${{ vars.STATE_PREFIX }}"
+
+    - name: Download Plan
+      uses: actions/download-artifact@v4
+      with:
+        name: tfplan-${{ github.event.inputs.environment }}
+        path: ./iac
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve tfplan
+      run: terraform apply -auto-approve tfplan-${{ github.event.inputs.environment }}
