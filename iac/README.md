@@ -101,7 +101,7 @@ Edit the placeholders values and run the following commands:
 
 ```bash
 N8N_SERVICE_NAME=name-of-deployed-n8n-service
-WEBHOOK_URL=url-of-cloud-run-service
+N8N_SERVICE_URL=url-of-cloud-run-service
 REGION=gcp-region
 gcloud run services update ${N8N_SERVICE_NAME} \
     --update-env-vars WEBHOOK_URL=${N8N_SERVICE_URL} \
