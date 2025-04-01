@@ -75,3 +75,13 @@ module "n8n" {
 #   image_tag              = var.api_image_tag
 #   depends_on             = [module.database, module.network, module.registry]
 # }
+
+module "browserless" {
+  source                    = "./modules/browserless"
+  project_id                = var.project_id
+  region                    = var.region
+  environment               = var.environment
+  n8n_service_account_email = module.n8n.service_account_email
+
+  depends_on = [module.network, module.n8n]
+}
