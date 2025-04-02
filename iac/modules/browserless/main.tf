@@ -10,7 +10,7 @@ resource "google_cloud_run_v2_service" "browserless" {
 
   template {
     containers {
-      image = "ghcr.io/browserless/chromium"
+      image = "browserless/chrome"
       ports {
         container_port = 3000
       }
@@ -18,11 +18,15 @@ resource "google_cloud_run_v2_service" "browserless" {
         name = "TOKEN"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.browserless_token.secret_id
+            secret  = google_secret_manager_secret.browserless_token.id
             version = "latest"
           }
         }
       }
+    }
+    scaling {
+      min_instance_count = var.min_instance_count
+      max_instance_count = var.max_instance_count
     }
   }
 }
