@@ -9,6 +9,7 @@ resource "google_cloud_run_v2_service" "browserless" {
   location = var.region
 
   template {
+    service_account = google_service_account.browserless.email
     containers {
       image = "browserless/chrome"
       ports {
