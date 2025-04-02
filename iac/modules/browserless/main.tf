@@ -24,6 +24,10 @@ resource "google_cloud_run_v2_service" "browserless" {
           }
         }
       }
+      env {
+        name  = "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"
+        value = "true"
+      }
     }
     scaling {
       min_instance_count = var.min_instance_count
