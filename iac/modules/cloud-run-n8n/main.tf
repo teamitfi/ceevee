@@ -156,6 +156,10 @@ resource "google_cloud_run_v2_service" "n8n" {
           }
         }
       }
+      env {
+        name  = "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"
+        value = "true"
+      }
 
       startup_probe {
         http_get {
