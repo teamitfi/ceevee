@@ -91,25 +91,6 @@ Terraform state is stored remotely in a Google Cloud Storage bucket with state l
 - `cpu_limit`: Format: "<number>m" (default: "1000m")
 - `repository_base_id`: 4-63 chars, lowercase alphanumeric with hyphens (default: "ceevee")
 
-## Post-Deployment Steps
-
-### N8N Configuration
-
-After deploying the infrastructure, you need to configure the N8N service with its webhook URL. This is required for proper webhook functionality in N8N workflows.
-
-Edit the placeholders values and run the following commands:
-
-```bash
-N8N_SERVICE_NAME=name-of-deployed-n8n-service
-N8N_SERVICE_URL=url-of-cloud-run-service
-REGION=gcp-region
-gcloud run services update ${N8N_SERVICE_NAME} \
-    --update-env-vars WEBHOOK_URL=${N8N_SERVICE_URL} \
-    --region ${REGION}
-```
-
-Note: The webhook URL should match the URL of your deployed N8N service. You can find this URL in the Cloud Run console or in the Terraform outputs.
-
 ## Formatting and validation
 
 The codebase follows standard Terraform formatting conventions. Before committing, run:

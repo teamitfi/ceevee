@@ -62,6 +62,14 @@ resource "google_cloud_run_v2_service" "n8n" {
   location            = var.region
   deletion_protection = false
 
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].env,
+      client,
+      client_version
+    ]
+  }
+
   template {
     vpc_access {
       connector = "projects/${var.project_id}/locations/${var.region}/connectors/${var.vpc_connector_name}"
@@ -160,7 +168,10 @@ resource "google_cloud_run_v2_service" "n8n" {
         name  = "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"
         value = "true"
       }
-
+      env {
+        name  = "NODE_FUNCTION_ALLOW_EXTERNAL"
+        value = "google-auth-library"
+      }
       startup_probe {
         http_get {
           path = "/healthz"
@@ -177,5 +188,17 @@ resource "google_cloud_run_v2_service" "n8n" {
       min_instance_count = var.min_instance_count
       max_instance_count = var.max_instance_count
     }
+  }
+}
+
+resource "null_resource" "update_post_depl_env_vars" {
+  depends_on = [google_cloud_run_v2_service.n8n]
+
+  provisioner "local-exec" {
+    command = <<EOF
+      gcloud run services update n8n-${var.environment} \
+        --region ${var.region} \
+        --update-env-vars="WEBHOOK_URL=${google_cloud_run_v2_service.n8n.uri}"
+    EOF
   }
 }

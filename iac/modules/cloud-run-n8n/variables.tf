@@ -73,7 +73,7 @@ variable "service_timezone" {
 variable "cloud_run_resource_limits" {
   description = "Resource limits for the Cloud Run service"
   type        = map(string)
-  default     = {
+  default = {
     cpu    = "1"
     memory = "2Gi"
   }
