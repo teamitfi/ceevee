@@ -12,6 +12,11 @@ resource "google_cloud_run_v2_service" "browserless" {
     service_account = google_service_account.browserless.email
     containers {
       image = "browserless/chrome"
+
+      resources {
+        limits = var.cloud_run_resource_limits
+      }
+
       ports {
         container_port = 3000
       }
@@ -23,6 +28,14 @@ resource "google_cloud_run_v2_service" "browserless" {
             version = "latest"
           }
         }
+      }
+      env {
+        name  = "CORS"
+        value = "true"
+      }
+      env {
+        name  = "DEBUG"
+        value = "*"
       }
     }
     scaling {

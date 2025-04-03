@@ -29,3 +29,12 @@ variable "max_instance_count" {
   type        = number
   default     = 3
 }
+
+variable "cloud_run_resource_limits" {
+  description = "Resource limits for the Cloud Run service"
+  type        = map(string)
+  default = {
+    cpu    = "1"
+    memory = "2Gi"
+  }
+}
